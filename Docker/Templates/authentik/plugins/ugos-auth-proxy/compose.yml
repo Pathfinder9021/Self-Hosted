@@ -6,32 +6,26 @@
 # Or add to your main docker-compose.yml
 
 services:
-  ugos-auth-proxy:
-    build: ./src
-    container_name: UGOS-Auth-Proxy
-    ports:
-      - "8180:8080"
+  authentik-ugos-auth-proxy:
+    build: ./src  # or ./plugins/ugos-auth-proxy/src
+    container_name: authentik-ugos-auth-proxy
+    # Expose port only if required
+    #ports:
+    #  - "9980:9980"
     networks:
-      - private-apps-ugos-auth-proxy
+      - private-apps-authentik
     user: ${PUID:-0}:${PGID:-0}
     environment:
-      - PUID=${PUID:-0}
-      - PGID=${PGID:-0}
-      - PORT=8080
+      - PORT=9980
     volumes:
       # IMPORTANT: Mount system files for PAM authentication and user info (read-only)
       - /etc/shadow:/etc/shadow:ro
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
     healthcheck:
-      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9980/health')"]
       interval: 30s
       timeout: 5s
       start_period: 10s
       retries: 3
     restart: unless-stopped
-
-networks:
-  private-apps-ugos-auth-proxy:
-    name: private-apps-ugos-auth-proxy
-    driver: bridge

@@ -1,10 +1,5 @@
 # UGOS Auth Proxy
 
-[![Tests](https://github.com/smgladkovskiy/ugos-auth-proxy/actions/workflows/tests.yml/badge.svg)](https://github.com/smgladkovskiy/ugos-auth-proxy/actions/workflows/tests.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
-
 PAM-based authentication proxy for integrating UGOS NAS with [authentik](https://goauthentik.io/) SSO.
 
 > 🇷🇺 [Документация на русском](README.ru.md)

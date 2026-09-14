@@ -176,17 +176,6 @@
         "url": "https://github.com/Pathfinder9021/Self-Hosted",
         "stackfile": "Docker/Templates/transmission-protonvpn/compose.yaml"
       }
-    },
-    {
-      "type": 3,
-      "title": "UGOS-Auth-Proxy",
-      "description": "An middleware for Authentik for using UGOS as authentication provider.",
-      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/authentik.png",
-      "categories": ["Security"],
-      "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "Docker/Templates/ugos-auth-proxy/compose.yaml"
-      }
     }
   ]
 }
