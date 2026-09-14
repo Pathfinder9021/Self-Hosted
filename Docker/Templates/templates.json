@@ -174,7 +174,7 @@
       "categories": ["Utilities"],
       "repository": {
         "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "Docker/Templates/transmission-protonvpn/compose.yaml"
+        "stackfile": "Docker/Templates/transmission-openvpn/compose.yaml"
       }
     }
   ]

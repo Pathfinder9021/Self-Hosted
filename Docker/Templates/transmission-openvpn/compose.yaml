@@ -32,8 +32,8 @@ services:
     labels:
       - "traefik.enable=${TRAEFIK_ENABLED:-false}"
       - "traefik.docker.network=public-apps"
-      - "traefik.http.routers.transmission-openvpn-http.entrypoints=web"
-      - "traefik.http.routers.transmission-openvpn-http.rule=Host(`transmission.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      #- "traefik.http.routers.transmission-openvpn-http.entrypoints=web"
+      #- "traefik.http.routers.transmission-openvpn-http.rule=Host(`transmission.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.transmission-openvpn-https.entrypoints=websecure"
       - "traefik.http.routers.transmission-openvpn-https.rule=Host(`transmission.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.transmission-openvpn-https.service=transmission-openvpn"
