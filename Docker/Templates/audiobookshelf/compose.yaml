@@ -1,6 +1,6 @@
 services:
   audiobookshelf:
-    container_name: Audiobookshelf
+    container_name: audiobookshelf
     image: ghcr.io/advplyr/audiobookshelf:${AUDIOBOOKSHELf_VERSION:-latest}
     user: ${PUID:-0}:${PGID:-0}
     security_opt:
@@ -18,15 +18,18 @@ services:
     labels:
       - "traefik.enable=${TRAEFIK_ENABLED:-false}"
       - "traefik.docker.network=public-apps"
-      - "traefik.http.routers.audiobookshelf-http.entrypoints=web"
-      - "traefik.http.routers.audiobookshelf-http.rule=Host(`audiobookshelf.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      #- "traefik.http.routers.audiobookshelf-http.entrypoints=web"
+      #- "traefik.http.routers.audiobookshelf-http.rule=Host(`audiobookshelf.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.audiobookshelf-https.entrypoints=websecure"
       - "traefik.http.routers.audiobookshelf-https.rule=Host(`audiobookshelf.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.audiobookshelf-https.service=audiobookshelf"
+      - "traefik.http.routers.audiobookshelf-https.middlewares=authentik@file"
       - "traefik.http.routers.audiobookshelf-https.tls=true"
       - "traefik.http.routers.audiobookshelf-https.tls.certresolver=cloudflare"
       - "traefik.http.routers.audiobookshelf-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
       - "traefik.http.routers.audiobookshelf-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
-      - "traefik.http.services.audiobookshelf.loadbalancer.server.port=10100"
+      - "traefik.http.services.audiobookshelf.loadbalancer.server.port=80"
+      - "traefik.http.services.audiobookshelf.loadbalancer.server.scheme=http"
     logging:
       driver: json-file
       options:

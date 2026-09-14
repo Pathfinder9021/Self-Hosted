@@ -1,6 +1,6 @@
 services:
   homepage:
-    container_name: Homepage
+    container_name: homepage
     image: ghcr.io/gethomepage/homepage:latest
     user: ${PUID:-0}:${PGID:-0}
     security_opt:
@@ -19,15 +19,18 @@ services:
     labels:
       - "traefik.enable=${TRAEFIK_ENABLED:-false}"
       - "traefik.docker.network=public-apps"
-      - "traefik.http.routers.homepage-http.entrypoints=web"
-      - "traefik.http.routers.homepage-http.rule=Host(`homepage.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      #- "traefik.http.routers.homepage-http.entrypoints=web"
+      #- "traefik.http.routers.homepage-http.rule=Host(`homepage.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.homepage-https.entrypoints=websecure"
       - "traefik.http.routers.homepage-https.rule=Host(`homepage.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.homepage-https.service=homepage"
+      - "traefik.http.routers.homepage-https.middlewares=authentik@file"
       - "traefik.http.routers.homepage-https.tls=true"
       - "traefik.http.routers.homepage-https.tls.certresolver=cloudflare"
       - "traefik.http.routers.homepage-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
       - "traefik.http.routers.homepage-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
-      - "traefik.http.services.homepage.loadbalancer.server.port=10000"
+      - "traefik.http.services.homepage.loadbalancer.server.port=3000"
+      - "traefik.http.services.homepage.loadbalancer.server.scheme=http"
     restart: unless-stopped
 
 networks:

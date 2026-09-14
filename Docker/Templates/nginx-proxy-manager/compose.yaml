@@ -3,7 +3,7 @@
 
 services:
   nginx-proxy-manager:
-    container_name: Nginx-Proxy-Manager
+    container_name: nginx-proxy-manager
     image: jc21/nginx-proxy-manager:${NGINX_VERSION:-latest}
     user: 0:0
     ports:
@@ -34,15 +34,17 @@ services:
     labels:
       - "traefik.enable=${TRAEFIK_ENABLED:-false}"
       - "traefik.docker.network=public-apps"
-      - "traefik.http.routers.nginx-proxy-manager-http.entrypoints=web"
-      - "traefik.http.routers.nginx-proxy-manager-http.rule=Host(`nginx.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      #- "traefik.http.routers.nginx-proxy-manager-http.entrypoints=web"
+      #- "traefik.http.routers.nginx-proxy-manager-http.rule=Host(`nginx.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.nginx-proxy-manager-https.entrypoints=websecure"
       - "traefik.http.routers.nginx-proxy-manager-https.rule=Host(`nginx.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.nginx-proxy-manager-https.service=nginx-proxy-manager"
       - "traefik.http.routers.nginx-proxy-manager-https.tls=true"
       - "traefik.http.routers.nginx-proxy-manager-https.tls.certresolver=cloudflare"
       - "traefik.http.routers.nginx-proxy-manager-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
       - "traefik.http.routers.nginx-proxy-manager-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
-      - "traefik.http.services.nginx-proxy-manager.loadbalancer.server.port=6080"
+      - "traefik.http.services.nginx-proxy-manager.loadbalancer.server.port=81"
+      - "traefik.http.services.nginx-proxy-manager.loadbalancer.server.scheme=http"
     healthcheck:
       test: ["CMD", "/usr/bin/check-health"]
       interval: 10s
@@ -53,7 +55,7 @@ services:
       - nginx-database
 
   nginx-database:
-    container_name: Nginx-Database
+    container_name: nginx-database
     image: 'jc21/mariadb-aria:latest'
     user: 0:0
     networks:
@@ -71,7 +73,7 @@ services:
     restart: unless-stopped
 
   nginx-certbot:
-    container_name: Nginx-Certbot
+    container_name: nginx-certbot
     image: certbot/certbot:latest
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
     user: 0:0

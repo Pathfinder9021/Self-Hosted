@@ -1,6 +1,6 @@
 services:
   bentopdf:
-    container_name: Bento-PDF
+    container_name: bentopdf
     image: bentopdf/bentopdf-simple:${BENTOPDF_VERSION:-latest}
     security_opt:
       - "no-new-privileges:true"
@@ -9,13 +9,24 @@ services:
     networks:
       - public-apps
     user: ${PUID:-0}:${PGID:-0}
-    environment:
-      - PUID=${PUID:-0}
-      - PGID=${PGID:-0}
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
-
+    labels:
+      - "traefik.enable=${TRAEFIK_ENABLED:-false}"
+      - "traefik.docker.network=public-apps"
+      #- "traefik.http.routers.bentopdf-http.entrypoints=web"
+      #- "traefik.http.routers.bentopdf-http.rule=Host(`bentopdf.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.bentopdf-https.entrypoints=websecure"
+      - "traefik.http.routers.bentopdf-https.rule=Host(`bentopdf.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.bentopdf-https.service=bentopdf"
+      - "traefik.http.routers.bentopdf-https.middlewares=authentik@file"
+      - "traefik.http.routers.bentopdf-https.tls=true"
+      - "traefik.http.routers.bentopdf-https.tls.certresolver=cloudflare"
+      - "traefik.http.routers.bentopdf-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.routers.bentopdf-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.services.bentopdf.loadbalancer.server.port=8080"
+      - "traefik.http.services.bentopdf.loadbalancer.server.scheme=http"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
       interval: 30s

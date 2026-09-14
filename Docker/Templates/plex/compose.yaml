@@ -1,6 +1,6 @@
 services:
   plex:
-    container_name: Plex
+    container_name: plex
     hostname: Plex
     image: ghcr.io/linuxserver/plex:${PLEX_VERSION:-latest}
     user: ${PUID:-0}:${PGID:0}

@@ -25,15 +25,18 @@ services:
     labels:
       - "traefik.enable=${TRAEFIK_ENABLED:-false}"
       - "traefik.docker.network=public-apps"
-      - "traefik.http.routers.traefik-http.entrypoints=web"
-      - "traefik.http.routers.traefik-http.rule=Host(`traefik.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      #- "traefik.http.routers.traefik-http.entrypoints=web"
+      #- "traefik.http.routers.traefik-http.rule=Host(`traefik.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.traefik-https.entrypoints=websecure"
       - "traefik.http.routers.traefik-https.rule=Host(`traefik.${TRAEFIK_CF_DNS_DOMAIN}`)"
-      - "traefik.http.routers.traefik-https.service=api@internal"
+      - "traefik.http.routers.traefik-https.service=traefik"
+      - "traefik.http.routers.traefik-https.middlewares=authentik@file"
       - "traefik.http.routers.traefik-https.tls=true"
       - "traefik.http.routers.traefik-https.tls.certresolver=cloudflare"
       - "traefik.http.routers.traefik-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
       - "traefik.http.routers.traefik-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+      - "traefik.http.services.traefik.loadbalancer.server.scheme=http"
     logging:
       driver: json-file
       options:

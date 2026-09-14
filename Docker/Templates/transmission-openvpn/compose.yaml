@@ -1,6 +1,6 @@
 services:
   transmission-openvpn:
-    container_name: Transmission-OPENVPN
+    container_name: transmission-openvpn
     image: haugene/transmission-openvpn:${TRANSMISSION_VERSION:-latest}
     user: ${PUID:-0}:${PGID:-0}
     cap_add:
@@ -36,11 +36,14 @@ services:
       - "traefik.http.routers.transmission-openvpn-http.rule=Host(`transmission.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.transmission-openvpn-https.entrypoints=websecure"
       - "traefik.http.routers.transmission-openvpn-https.rule=Host(`transmission.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.transmission-openvpn-https.service=transmission-openvpn"
+      - "traefik.http.routers.transmission-openvpn-https.middlewares=authentik@file"
       - "traefik.http.routers.transmission-openvpn-https.tls=true"
       - "traefik.http.routers.transmission-openvpn-https.tls.certresolver=cloudflare"
       - "traefik.http.routers.transmission-openvpn-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
       - "traefik.http.routers.transmission-openvpn-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
-      - "traefik.http.services.transmission-openvpn.loadbalancer.server.port=13191"
+      - "traefik.http.services.transmission-openvpn.loadbalancer.server.port=9091"
+      - "traefik.http.services.transmission-openvpn.loadbalancer.server.scheme=http"
     logging:
       driver: json-file
       options:

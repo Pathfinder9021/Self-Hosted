@@ -1,6 +1,6 @@
 services:      
   nextcloud:
-    container_name: Nextcloud
+    container_name: nextcloud
     image: nextcloud
     user: ${PUID:-0}:${PGID:-0}
     security_opt:
@@ -33,15 +33,17 @@ services:
     labels:
       - "traefik.enable=${TRAEFIK_ENABLED:-false}"
       - "traefik.docker.network=public-apps"
-      - "traefik.http.routers.nextcloud-http.entrypoints=web"
-      - "traefik.http.routers.nextcloud-http.rule=Host(`nextcloud.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      #- "traefik.http.routers.nextcloud-http.entrypoints=web"
+      #- "traefik.http.routers.nextcloud-http.rule=Host(`nextcloud.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.nextcloud-https.entrypoints=websecure"
       - "traefik.http.routers.nextcloud-https.rule=Host(`nextcloud.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.nextcloud-https.service=nextcloud"
       - "traefik.http.routers.nextcloud-https.tls=true"
       - "traefik.http.routers.nextcloud-https.tls.certresolver=cloudflare"
       - "traefik.http.routers.nextcloud-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
       - "traefik.http.routers.nextcloud-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
-      - "traefik.http.services.nextcloud.loadbalancer.server.port=10190"
+      - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
+      - "traefik.http.services.nextcloud.loadbalancer.server.scheme=http"
     healthcheck:
       test: curl -f http://localhost:80/ || exit 1
     restart: unless-stopped

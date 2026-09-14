@@ -2,7 +2,7 @@ services:
   nutify:
     # Container image
     image: dartsteven/nutify:${NUTIFY_VERSION:-latest}
-    container_name: Nutify
+    container_name: nutify
     user: ${PUID:-0}:${PGID:0}
     privileged: true                             # Broad hardware access for NUT and USB integration
     cap_add:
@@ -39,11 +39,13 @@ services:
       - "traefik.http.routers.nutify-http.rule=Host(`nutify.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.nutify-https.entrypoints=websecure"
       - "traefik.http.routers.nutify-https.rule=Host(`nutify.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.nutify-https.service=nutify"
       - "traefik.http.routers.nutify-https.tls=true"
       - "traefik.http.routers.nutify-https.tls.certresolver=cloudflare"
       - "traefik.http.routers.nutify-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
       - "traefik.http.routers.nutify-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
       - "traefik.http.services.nutify.loadbalancer.server.port=5050"
+      - "traefik.http.services.nutify.loadbalancer.server.scheme=http"
     # DNS resolvers
     dns:
       - 1.1.1.1                                  # Cloudflare DNS

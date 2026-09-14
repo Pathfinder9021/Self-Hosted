@@ -24,10 +24,11 @@ services:
     labels:
       - "traefik.enable=${TRAEFIK_ENABLED:-false}"
       - "traefik.docker.network=public-apps"
-      - "traefik.http.routers.authentik-http.entrypoints=web"
-      - "traefik.http.routers.authentik-http.rule=Host(`auth.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      #- "traefik.http.routers.authentik-http.entrypoints=web"
+      #- "traefik.http.routers.authentik-http.rule=Host(`auth.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.authentik-https.entrypoints=websecure"
       - "traefik.http.routers.authentik-https.rule=Host(`auth.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.authentik-https.service=authentik"
       - "traefik.http.routers.authentik-https.tls=true"
       - "traefik.http.routers.authentik-https.tls.certresolver=cloudflare"
       - "traefik.http.routers.authentik-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"

@@ -1,6 +1,6 @@
 services:
   dockhand:
-    container_name: Dockhand
+    container_name: dockhand
     image: fnsys/dockhand:${DOCKHAND_VERSION:-latest}
     ports:
       - 3000:3000
@@ -17,15 +17,17 @@ services:
     labels:
       - "traefik.enable=${TRAEFIK_ENABLED:-false}"
       - "traefik.docker.network=public-apps"
-      - "traefik.http.routers.dockhand-http.entrypoints=web"
-      - "traefik.http.routers.dockhand-http.rule=Host(`dockhand.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      #- "traefik.http.routers.dockhand-http.entrypoints=web"
+      #- "traefik.http.routers.dockhand-http.rule=Host(`dockhand.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.dockhand-https.entrypoints=websecure"
       - "traefik.http.routers.dockhand-https.rule=Host(`dockhand.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.dockhand-https.service=dockhand"
       - "traefik.http.routers.dockhand-https.tls=true"
       - "traefik.http.routers.dockhand-https.tls.certresolver=cloudflare"
       - "traefik.http.routers.dockhand-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
       - "traefik.http.routers.dockhand-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
       - "traefik.http.services.dockhand.loadbalancer.server.port=3000"
+      - "traefik.http.services.dockhand.loadbalancer.server.scheme=http"
     restart: unless-stopped
 
 networks:

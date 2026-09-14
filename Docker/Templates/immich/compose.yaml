@@ -1,6 +1,6 @@
 services:
   immich:
-    container_name: Immich
+    container_name: immich
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     user: ${PUID:-0}:${PGID:-0}
     security_opt:
@@ -26,15 +26,17 @@ services:
     labels:
       - "traefik.enable=${TRAEFIK_ENABLED:-false}"
       - "traefik.docker.network=public-apps"
-      - "traefik.http.routers.immich-http.entrypoints=web"
-      - "traefik.http.routers.immich-http.rule=Host(`immich.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      #- "traefik.http.routers.immich-http.entrypoints=web"
+      #- "traefik.http.routers.immich-http.rule=Host(`immich.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.immich-https.entrypoints=websecure"
       - "traefik.http.routers.immich-https.rule=Host(`immich.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.immich-https.service=immich"
       - "traefik.http.routers.immich-https.tls=true"
       - "traefik.http.routers.immich-https.tls.certresolver=cloudflare"
       - "traefik.http.routers.immich-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
       - "traefik.http.routers.immich-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
-      - "traefik.http.services.immich.loadbalancer.server.port=10150"
+      - "traefik.http.services.immich.loadbalancer.server.port=2283"
+      - "traefik.http.services.immich.loadbalancer.server.scheme=http"
     healthcheck:
       disable: false
     restart: unless-stopped
@@ -43,7 +45,7 @@ services:
       - immich-redis
 
   immich-machine-learning:
-    container_name: Immich-Machine-Learning
+    container_name: immich-machine-learning
     extends:
       file: hwaccel.ml.yml
       service: openvino # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference - use the `-wsl` version for WSL2 where applicable
@@ -62,7 +64,7 @@ services:
     restart: unless-stopped
 
   immich-database:
-    container_name: Immich-Database
+    container_name: immich-database
     image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
     user: ${PUID:-0}:${PGID:-0}
     networks:
@@ -83,7 +85,7 @@ services:
       disable: false
 
   immich-redis:
-    container_name: Immich-Redis
+    container_name: immich-redis
     image: docker.io/valkey/valkey:9@sha256:3b55fbaa0cd93cf0d9d961f405e4dfcc70efe325e2d84da207a0a8e6d8fde4f9
     user: ${PUID:-0}:${PGID:-0}
     networks:

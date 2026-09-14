@@ -1,6 +1,6 @@
 # UGOS Auth Proxy
 
-PAM-based authentication proxy for integrating UGOS NAS with [authentik](https://goauthentik.io/) SSO.
+PAM-based authentication proxy for integrating Ugreen NAS with [authentik](https://goauthentik.io/) SSO.
 
 > 🇷🇺 [Документация на русском](README.ru.md)
 

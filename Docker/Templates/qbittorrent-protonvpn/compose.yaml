@@ -1,6 +1,6 @@
 services:
   qbittorrent:
-    container_name: qBittorrent
+    container_name: qbittorrent
     image: lscr.io/linuxserver/qbittorrent:${QBITTORRENT_VERSION:-latest}
     user: ${PUID:-0}:${PGID:-0}
     network_mode: "service:protonvpn"
@@ -11,14 +11,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ${PATH_APPDATA}/qbittorrent-protonvpn/config:/config
       - ${PATH_MEDIA}:/mnt/media/downloads
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.qbittorrent-http.rule=Host('qbittorrent.<subdomain>.<domain>')
-      - traefik.http.routers.qbittorrent-http.entrypoint=web
-      - traefik.http.routers.qbittorrent-https.tls=true
-      - traefik.http.routers.qbittorrent-https.tls.certresolver=cloudflare
-      - traefik.http.routers.qbittorrent-https.entrypoint=websecure
-      - traefik.http.routers.qbittorrent-https.rule=Host('qbittorrent.<subdomain>.<domain>')
     restart: unless-stopped
     depends_on:
       - qbittorrent-gluetun
@@ -52,15 +44,18 @@ services:
     labels:
       - "traefik.enable=${TRAEFIK_ENABLED:-false}"
       - "traefik.docker.network=public-apps"
-      - "traefik.http.routers.qbittorrent-http.entrypoints=web"
-      - "traefik.http.routers.qbittorrent-http.rule=Host(`qbittorrent.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      #- "traefik.http.routers.qbittorrent-http.entrypoints=web"
+      #- "traefik.http.routers.qbittorrent-http.rule=Host(`qbittorrent.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.qbittorrent-https.entrypoints=websecure"
       - "traefik.http.routers.qbittorrent-https.rule=Host(`qbittorrent.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.qbittorrent-https.service=qbittorrent"
+      - "traefik.http.routers.qbittorrent-https.middlewares=authentik@file"
       - "traefik.http.routers.qbittorrent-https.tls=true"
-      - "traefik.http.routers.nutqbittorrentify-https.tls.certresolver=cloudflare"
+      - "traefik.http.routers.qbittorrent-https.tls.certresolver=cloudflare"
       - "traefik.http.routers.qbittorrent-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
       - "traefik.http.routers.qbittorrent-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
-      - "traefik.http.services.qbittorrent.loadbalancer.server.port=5050"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.port=${QBITTORRENT_WEBUI_PORT}"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.scheme=http"
     devices:
       - /dev/net/tun:/dev/net/tun
 
