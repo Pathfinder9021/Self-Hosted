@@ -1,0 +1,25 @@
+services:
+  oauth2-proxy:
+    container_name: OAuth2-Proxy
+    image: quay.io/oauth2-proxy/oauth2-proxy:latest
+    ports:
+      - "10101:4180"
+    user: ${PUID:-0}:${PGID:0}
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      # General Settings
+      - OAUTH2_PROXY_HTTP_ADDRESS="0.0.0.0:4180"
+      - OAUTH2_PROXY_COOKIE_SECRET=${PROXY_COOKIE_SECRET}
+      - OAUTH2_PROXY_EMAIL_DOMAINS="*"
+      # OIDC Provider Settings
+      - OAUTH2_PROXY_PROVIDER=${PROXY_PROVIDER}
+      - OAUTH2_PROXY_OIDC_ISSUER_URL=${PROXY_OIDC_DISCOVERY}
+      - OAUTH2_PROXY_OIDC_EMAIL_CLAIM=${PROXY_OIDC_EMAIL_CLAIM}
+      - OAUTH2_PROXY_SKIP_PROVIDER_BUTTON=${PROXY_SKIP_PROVIDER_BUTTON:-false}
+      - OAUTH2_PROXY_CLIENT_ID=${PROXY_OIDC_CLIENT_ID}
+      - OAUTH2_PROXY_CLIENT_SECRET=${PROXY_OIDC_CLIENT_SECRET}
+      # Upstream and Redirects
+      - OAUTH2_PROXY_UPSTREAMS=${PROXY_UPSTREAMS}
+      - OAUTH2_PROXY_REDIRECT_URL=${PROXY_REDIRECT_URL}
+    restart: unless-stopped

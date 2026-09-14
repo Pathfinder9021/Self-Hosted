@@ -1,0 +1,58 @@
+services:
+  nutify:
+    # Container image
+    image: dartsteven/nutify:${NUTIFY_VERSION:-latest}
+    container_name: Nutify
+    user: ${PUID:-0}:${PGID:0}
+    privileged: true                             # Broad hardware access for NUT and USB integration
+    cap_add:
+      - SYS_ADMIN                                # Extended system administration capabilities
+      - SYS_RAWIO                                # Raw hardware I/O access
+      - MKNOD                                    # Create special device files if needed
+    devices:
+      - /dev/bus/usb:/dev/bus/usb:rwm            # Map host USB bus into the container
+    device_cgroup_rules:
+      - 'c 189:* rwm'                            # Allow all USB character devices
+    ports:
+      - 3493:3493                                # NUT daemon communication port
+      - 5050:5050                                # Nutify application port
+      #- 443:443                                  # HTTPS secure web access
+    networks:
+      - public-apps
+    environment:
+      - SECRET_KEY=${NUTIFY_SESSION_SECRET}             # Secret key used for sessions and encrypted values
+      - UDEV=1                                   # Enable udev-aware USB detection mode
+      - SSL_ENABLED=false                        # true or false, default is false
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /dev:/dev:rw                             # Full device tree access for hardware detection
+      - /run/udev:/run/udev:ro  
+      - ${PATH_APPDATA}/nutify/logs:/app/nutify/logs           # Application logs
+      - ${PATH_APPDATA}/nutify/instance:/app/nutify/instance   # Persistent app data and runtime files
+      - ${PATH_APPDATA}/nutify/ssl:/app/ssl                    # SSL certificates and private keys
+      - ${PATH_APPDATA}/nutify/nut:/etc/nut                # NUT configuration directory                 # Udev event access for hotplug monitoring
+    labels:
+      - "traefik.enable=${TRAEFIK_ENABLED:-false}"
+      - "traefik.docker.network=public-apps"
+      - "traefik.http.routers.nutify-http.entrypoints=web"
+      - "traefik.http.routers.nutify-http.rule=Host(`nutify.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.nutify-https.entrypoints=websecure"
+      - "traefik.http.routers.nutify-https.rule=Host(`nutify.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.nutify-https.tls=true"
+      - "traefik.http.routers.nutify-https.tls.certresolver=cloudflare"
+      - "traefik.http.routers.nutify-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.routers.nutify-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.services.nutify.loadbalancer.server.port=5050"
+    # DNS resolvers
+    dns:
+      - 1.1.1.1                                  # Cloudflare DNS
+      - 8.8.8.8                                  # Google DNS
+    dns_opt:
+      - timeout:2                                # DNS timeout per query
+      - attempts:2                               # Retry count before failure
+    restart: unless-stopped
+
+networks:
+  public-apps:
+    external: true

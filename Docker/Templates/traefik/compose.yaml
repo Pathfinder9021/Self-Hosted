@@ -1,0 +1,51 @@
+services:
+  traefik:
+    container_name: Traefik
+    image: traefik:latest
+    user: ${PUID:-0}:${PGID:-0}
+    security_opt:
+      - "no-new-privileges:true"
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    networks:
+      - public-apps
+    command:
+      - "--ping=true"
+    environment:
+      - CF_API_EMAIL=${TRAEFIK_CF_DNS_API_EMAIL}
+      - CF_DNS_API_TOKEN=${TRAEFIK_CF_DNS_API_TOKEN}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${PATH_APPDATA}/traefik/config/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - ${PATH_APPDATA}/traefik/config/dynamic.yaml:/etc/traefik/dynamic.yaml/:ro
+      - ${PATH_APPDATA}/traefik/certs/:/var/traefik/certs/:rw
+    labels:
+      - "traefik.enable=${TRAEFIK_ENABLED:-false}"
+      - "traefik.docker.network=public-apps"
+      - "traefik.http.routers.traefik-http.entrypoints=web"
+      - "traefik.http.routers.traefik-http.rule=Host(`traefik.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.traefik-https.entrypoints=websecure"
+      - "traefik.http.routers.traefik-https.rule=Host(`traefik.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.traefik-https.service=api@internal"
+      - "traefik.http.routers.traefik-https.tls=true"
+      - "traefik.http.routers.traefik-https.tls.certresolver=cloudflare"
+      - "traefik.http.routers.traefik-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.routers.traefik-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 2s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+
+networks:
+  public-apps:
+    external: true

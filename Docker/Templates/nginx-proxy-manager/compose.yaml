@@ -1,0 +1,92 @@
+# Despite containers can be run on behalf of a given user,
+# they must start on behalf of a 'root' user.
+
+services:
+  nginx-proxy-manager:
+    container_name: Nginx-Proxy-Manager
+    image: jc21/nginx-proxy-manager:${NGINX_VERSION:-latest}
+    user: 0:0
+    ports:
+       # These ports are in format <host-port>:<container-port>
+      - '6080:80' # Public HTTP Port
+      - '6081:443' # Public HTTPS Port
+      - '6082:81' # Admin Web Port
+      # Add any other Stream port you want to expose
+      # - '21:21' # FTP
+    networks:
+      - private-apps-nginx
+      - public-apps
+    environment:
+      - INITIAL_ADMIN_EMAIL=${NGINX_ADMIN_EMAIL}
+      - INITIAL_ADMIN_PASSWORD=${NGINX_ADMIN_PASSWORD}
+      - DB_MYSQL_HOST=nginx-database
+      - DB_MYSQL_PORT=3306
+      - DB_MYSQL_NAME=${NGINX_DATABASE_SCHEMA:-npm}
+      - DB_MYSQL_USER=${NGINX_DATABASE_USERNAME:-npm}
+      - DB_MYSQL_PASSWORD=${NGINX_DATABASE_PASSWORD}
+      # Uncomment this if IPv6 is not enabled on your host
+      # - DISABLE_IPV6='true'
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${PATH_APPDATA}/nginx-proxy-manager/letsencrypt:/etc/letsencrypt:rw
+      - ${PATH_APPDATA}/nginx-proxy-manager/data:/data:rw
+    labels:
+      - "traefik.enable=${TRAEFIK_ENABLED:-false}"
+      - "traefik.docker.network=public-apps"
+      - "traefik.http.routers.nginx-proxy-manager-http.entrypoints=web"
+      - "traefik.http.routers.nginx-proxy-manager-http.rule=Host(`nginx.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.nginx-proxy-manager-https.entrypoints=websecure"
+      - "traefik.http.routers.nginx-proxy-manager-https.rule=Host(`nginx.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.nginx-proxy-manager-https.tls=true"
+      - "traefik.http.routers.nginx-proxy-manager-https.tls.certresolver=cloudflare"
+      - "traefik.http.routers.nginx-proxy-manager-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.routers.nginx-proxy-manager-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.services.nginx-proxy-manager.loadbalancer.server.port=6080"
+    healthcheck:
+      test: ["CMD", "/usr/bin/check-health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 90s
+    restart: unless-stopped
+    depends_on:
+      - nginx-database
+
+  nginx-database:
+    container_name: Nginx-Database
+    image: 'jc21/mariadb-aria:latest'
+    user: 0:0
+    networks:
+      - private-apps-nginx
+    environment:
+      - MYSQL_DATABASE=${NGINX_DATABASE_SCHEMA:-npm}
+      - MYSQL_USER=${NGINX_DATABASE_USERNAME:-npm}
+      - MYSQL_PASSWORD=${NGINX_DATABASE_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${NGINX_DATABASE_ROOT_PASSWORD}
+      - MARIADB_AUTO_UPGRADE='1'
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${PATH_APPDATA}/nginx-proxy-manager/database:/var/lib/mysql
+    restart: unless-stopped
+
+  nginx-certbot:
+    container_name: Nginx-Certbot
+    image: certbot/certbot:latest
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    user: 0:0
+    networks:
+      - private-apps-nginx
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${PATH_APPDATA}/nginx-proxy-manager/certbot/www:/var/www/certbot:rw
+      - ${PATH_APPDATA}/nginx-proxy-manager/letsencrypt:/etc/letsencrypt:rw
+    restart: unless-stopped
+
+networks:
+  private-apps-nginx:
+    name: private-apps-nginx
+    driver: bridge
+  public-apps:
+    external: true

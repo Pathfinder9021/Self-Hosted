@@ -1,0 +1,95 @@
+services:
+  authentik:
+    container_name: Authentik
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_VERSION:-2026.8}
+    command: server
+    user: ${PUID:-0}:${PGID:-0}
+    shm_size: 512mb
+    ports:
+      - 6000:9000
+      - 6001:9443
+    networks:
+      - private-apps-authentik
+      - public-apps
+    environment:
+      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY}
+      - AUTHENTIK_POSTGRESQL__HOST=authentik-database
+      - AUTHENTIK_POSTGRESQL__NAME=${AUTHENTIK_DATABASE_SCHEMA:-authentik}
+      - AUTHENTIK_POSTGRESQL__USER=${AUTHENTIK_DATABASE_USERNAME:-authentik}
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${AUTHENTIK_DATABASE_PASSWORD}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${PATH_APPDATA}/authentik/data:/data
+    labels:
+      - "traefik.enable=${TRAEFIK_ENABLED:-false}"
+      - "traefik.docker.network=public-apps"
+      - "traefik.http.routers.authentik-http.entrypoints=web"
+      - "traefik.http.routers.authentik-http.rule=Host(`auth.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.authentik-https.entrypoints=websecure"
+      - "traefik.http.routers.authentik-https.rule=Host(`auth.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.authentik-https.tls=true"
+      - "traefik.http.routers.authentik-https.tls.certresolver=cloudflare"
+      - "traefik.http.routers.authentik-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.routers.authentik-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.services.authentik.loadbalancer.server.port=6001"
+    restart: unless-stopped
+    depends_on:
+      authentik-database:
+        condition: service_healthy
+
+  authentik-worker:
+    container_name: Authentik-Worker
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_VERSION:-2026.8}
+    command: worker
+    shm_size: 512mb
+    user: ${PUID:-0}:${PGID:-0}
+    networks:
+      - private-apps-authentik
+    environment:
+      - AUTHENTIK_POSTGRESQL__HOST=authentik-database
+      - AUTHENTIK_POSTGRESQL__NAME=${AUTHENTIK_DATABASE_SCHEMA:-authentik}
+      - AUTHENTIK_POSTGRESQL__USER=${AUTHENTIK_DATABASE_USERNAME:-authentik}
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${AUTHENTIK_DATABASE_PASSWORD}
+      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${PATH_APPDATA}/authentik/data:/data
+      - ${PATH_APPDATA}/authentik/certs:/certs
+    restart: unless-stopped
+    depends_on:
+      authentik-database:
+        condition: service_healthy
+    
+  authentik-database:
+    container_name: Authentik-Database
+    image: docker.io/library/postgres:latest
+    user: ${PUID:-0}:${PGID:-0}
+    networks:
+      - private-apps-authentik
+    environment:
+      - POSTGRES_DB=${AUTHENTIK_DATABASE_SCHEMA:-authentik}
+      - POSTGRES_USER=${AUTHENTIK_DATABASE_USERNAME:-authentik}
+      - POSTGRES_PASSWORD=${AUTHENTIK_DATABASE_PASSWORD}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${PATH_APPDATA}/authentik/database:/var/lib/postgresql
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 20s
+      test:
+      - CMD-SHELL
+      - pg_isready -d $${AUTHENTIK_DATABASE_SCHEMA:-authentik} -U $${AUTHENTIK_DATABASE_USERNAME:-authentik}
+      timeout: 5s
+    restart: unless-stopped
+
+networks:
+  private-apps-authentik:
+    name: private-apps-authentik
+    driver: bridge
+  public-apps:
+    external: true

@@ -1,0 +1,35 @@
+services:
+  homepage:
+    container_name: Homepage
+    image: ghcr.io/gethomepage/homepage:latest
+    user: ${PUID:-0}:${PGID:-0}
+    security_opt:
+      - "no-new-privileges:true"
+    ports:
+      - 10000:3000
+    networks:
+      - public-apps
+    environment:
+      - HOMEPAGE_ALLOWED_HOSTS=${HOMEPAGE_ALLOWED_HOSTS}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${PATH_APPDATA}/homepage/config:/app/config:rw
+    labels:
+      - "traefik.enable=${TRAEFIK_ENABLED:-false}"
+      - "traefik.docker.network=public-apps"
+      - "traefik.http.routers.homepage-http.entrypoints=web"
+      - "traefik.http.routers.homepage-http.rule=Host(`homepage.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.homepage-https.entrypoints=websecure"
+      - "traefik.http.routers.homepage-https.rule=Host(`homepage.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.homepage-https.tls=true"
+      - "traefik.http.routers.homepage-https.tls.certresolver=cloudflare"
+      - "traefik.http.routers.homepage-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.routers.homepage-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.services.homepage.loadbalancer.server.port=10000"
+    restart: unless-stopped
+
+networks:
+  public-apps:
+    external: true

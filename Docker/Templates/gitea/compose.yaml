@@ -1,0 +1,92 @@
+services:
+  gitea:
+    container_name: Gitea
+    image: docker.gitea.com/gitea:${GITEA_VERSION:-latest}
+    user: ${PUID:-0}:${PGID:-0}
+    security_opt:
+      - "no-new-privileges:true"
+    ports:
+      - "10200:3000"
+      - "10202:22"
+    networks:
+      - private-apps-gitea
+      - public-apps
+    environment:
+      - USER_UID=${PUID:-0}
+      - USER_GID=${PGID:-0}
+      - GITEA__database__DB_TYPE=postgres
+      - GITEA__database__HOST=gitea-database:5432
+      - GITEA__database__NAME=${GITEA_DATABASE_SCHEMA:-gitea}
+      - GITEA__database__USER=${GITEA_DATABASE_USERNAME:-gitea}
+      - GITEA__database__PASSWD=${GITEA_DATABASE_PASSWORD}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${PATH_APPDATA}/gitea/data:/data:rw
+      - ${PATH_APPDATA}/gitea/repositories:/data/git/repositories:rw
+    labels:
+      - "traefik.enable=${TRAEFIK_ENABLED:-false}"
+      - "traefik.docker.network=public-apps"
+      - "traefik.http.routers.gitea-http.entrypoints=web"
+      - "traefik.http.routers.gitea-http.rule=Host(`gitea.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.gitea-https.entrypoints=websecure"
+      - "traefik.http.routers.gitea-https.rule=Host(`gitea.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.gitea-https.tls=true"
+      - "traefik.http.routers.gitea-https.tls.certresolver=cloudflare"
+      - "traefik.http.routers.gitea-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.routers.gitea-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.services.gitea.loadbalancer.server.port=10200"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
+    restart: unless-stopped
+    depends_on:
+      - gitea-database
+
+  gitea-runner:
+    container_name: Gitea-Runner
+    image: gitea/act_runner:${GITEA_VERSION:-latest}
+    user: ${PUID:-0}:${PGID:-0}
+    networks:
+      - private-apps-gitea
+    environment:
+      - GITEA_RUNNER_NAME=local
+      - GITEA_INSTANCE_URL=gitea
+      - GITEA_RUNNER_REGISTRATION_TOKEN=${GITEA_RUNNER_REGISTRATION_TOKEN}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${PATH_APPDATA}/gitea-runner/data:/data
+    restart: unless-stopped
+    depends_on:
+      - gitea
+
+  gitea-database:
+    container_name: Gitea-Database
+    image: docker.io/library/postgres:latest
+    user: ${PUID:-0}:${PGID:-0}
+    networks:
+      - private-apps-gitea
+    environment:
+      - POSTGRES_DB=${GITEA_DATABASE_SCHEMA}
+      - POSTGRES_USER=${GITEA_DATABASE_USERNAME}
+      - POSTGRES_PASSWORD=${GITEA_DATABASE_PASSWORD}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${PATH_APPDATA}/gitea/database:/var/lib/postgresql
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "gitea", "-U", "${GITEA_DATABASE_USERNAME}"]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    restart: unless-stopped
+
+networks:
+  private-apps-gitea:
+    name: private-apps-gitea
+    driver: bridge
+  public-apps:
+    external: true

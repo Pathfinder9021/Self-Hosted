@@ -1,0 +1,50 @@
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+log:
+  # INFO, DEBUG, TRACE, ERROR, FATAL, PANIC
+  level: INFO
+
+api:
+  #dashboard: true
+  # Tells Traefik to bypass all routing and security rules to give you immediate,
+  # unrestricted access to the Traefik API and Web Dashboard. 
+  # Is used strictly for local development and testing.
+  #insecure: true
+
+# Enable the ping health check endpoint
+ping: {}
+
+entryPoints:
+  web:
+    address: :80
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: :443
+
+certificatesResolvers:
+  cloudflare:
+    acme:
+      # Email can be set here or by the 'CF_DNS_API_TOKEN' environment variable
+      #email: "your-email@example.com"
+      storage: /var/traefik/certs/cloudflare-acme.json
+      caServer: 'https://acme-v02.api.letsencrypt.org/directory'
+      keyType: EC256
+      dnsChallenge:
+        provider: cloudflare
+        resolvers:
+          - "1.1.1.1:53"
+          - "8.8.8.8:53"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+  file:
+    filename: /etc/traefik/dynamic.yaml
+    watch: true

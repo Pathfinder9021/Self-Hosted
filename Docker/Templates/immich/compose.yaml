@@ -1,0 +1,107 @@
+services:
+  immich:
+    container_name: Immich
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    user: ${PUID:-0}:${PGID:-0}
+    security_opt:
+      - "no-new-privileges:true"
+    ports:
+      - '10150:2283'
+    networks:
+      - private-apps-immich
+      - public-apps
+    extends:
+      file: hwaccel.transcoding.yml
+      service: quicksync # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
+    environment:
+      - CPU_CORES=${IMMICH_CPU_CORES:-4}
+      #- IMMICH_TRUSTED_PROXIES=${IMMICH_TRUSTED_PROXIES}
+      #- IMMICH_WORKERS_INCLUDE=${IMMICH_WORKERS_INCLUDE}
+      #- IMMICH_WORKERS_EXCLUDE=${IMMICH_WORKERS_EXCLUDE}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${PATH_APPDATA}/immich/data:/data
+      - ${PATH_MEDIA}:/mnt/media/photos
+    labels:
+      - "traefik.enable=${TRAEFIK_ENABLED:-false}"
+      - "traefik.docker.network=public-apps"
+      - "traefik.http.routers.immich-http.entrypoints=web"
+      - "traefik.http.routers.immich-http.rule=Host(`immich.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.immich-https.entrypoints=websecure"
+      - "traefik.http.routers.immich-https.rule=Host(`immich.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.immich-https.tls=true"
+      - "traefik.http.routers.immich-https.tls.certresolver=cloudflare"
+      - "traefik.http.routers.immich-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.routers.immich-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.services.immich.loadbalancer.server.port=10150"
+    healthcheck:
+      disable: false
+    restart: unless-stopped
+    depends_on:
+      - immich-database
+      - immich-redis
+
+  immich-machine-learning:
+    container_name: Immich-Machine-Learning
+    extends:
+      file: hwaccel.ml.yml
+      service: openvino # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference - use the `-wsl` version for WSL2 where applicable
+    # For hardware acceleration, add one of -[armnn, cuda, rocm, openvino, rknn] to the image tag.
+    # Example tag: ${IMMICH_VERSION:-release}-cuda
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}-openvino
+    user: ${PUID:-0}:${PGID:-0}
+    networks:
+      - private-apps-immich
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${PATH_APPDATA}/immich/machine-learning/cache:/cache
+    healthcheck:
+      disable: false
+    restart: unless-stopped
+
+  immich-database:
+    container_name: Immich-Database
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    user: ${PUID:-0}:${PGID:-0}
+    networks:
+      - private-apps-immich
+    environment:
+      - POSTGRES_DB=${IMMICH_DATABASE_SCHEMA:-immich}
+      - POSTGRES_USER=${IMMICH_DATABASE_USERNAME:-immich}
+      - POSTGRES_PASSWORD=${IMMICH_DATABASE_PASSWORD}
+      - POSTGRES_INITDB_ARGS='--data-checksums'
+      - DB_STORAGE_TYPE='HDD'
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${PATH_APPDATA}/immich/database:/var/lib/postgresql
+    shm_size: 128mb
+    restart: unless-stopped
+    healthcheck:
+      disable: false
+
+  immich-redis:
+    container_name: Immich-Redis
+    image: docker.io/valkey/valkey:9@sha256:3b55fbaa0cd93cf0d9d961f405e4dfcc70efe325e2d84da207a0a8e6d8fde4f9
+    user: ${PUID:-0}:${PGID:-0}
+    networks:
+      - private-apps-immich
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${PATH_APPDATA}/immich/redis:/data:rw
+    healthcheck:
+      test: redis-cli ping || exit 1
+    restart: unless-stopped
+
+networks:
+  private-apps-immich:
+    name: private-apps-immich
+    driver: bridge
+  public-apps:
+    external: true

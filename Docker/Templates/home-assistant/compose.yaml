@@ -1,0 +1,39 @@
+services:
+  homeassistant:
+    container_name: Home-Assistant
+    image: homeassistant/home-assistant:${HOME_ASSISTANT_VERSION:-latest}
+    user: ${PUID:-0}:${PGID:-0}
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    ports:
+      - "10060:8123"
+    networks:
+      - public-apps
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${PATH_APPDATA}/home-assistant/config:/config
+    labels:
+      - "traefik.enable=${TRAEFIK_ENABLED:-false}"
+      - "traefik.docker.network=public-apps"
+      - "traefik.http.routers.homeassistant-http.entrypoints=web"
+      - "traefik.http.routers.homeassistant-http.rule=Host(`homeassistant.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.homeassistant-https.entrypoints=websecure"
+      - "traefik.http.routers.homeassistant-https.rule=Host(`homeassistant.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.homeassistant-https.tls=true"
+      - "traefik.http.routers.homeassistant-https.tls.certresolver=cloudflare"
+      - "traefik.http.routers.homeassistant-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.routers.homeassistant-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.services.homeassistant.loadbalancer.server.port=10060"
+    healthcheck:
+      test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/8123' || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    restart: unless-stopped
+  
+networks:
+  public-apps:
+    external: true

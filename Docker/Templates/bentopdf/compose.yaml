@@ -1,0 +1,29 @@
+services:
+  bentopdf:
+    container_name: Bento-PDF
+    image: bentopdf/bentopdf-simple:${BENTOPDF_VERSION:-latest}
+    security_opt:
+      - "no-new-privileges:true"
+    ports:
+      - "10120:8080"
+    networks:
+      - public-apps
+    user: ${PUID:-0}:${PGID:-0}
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+networks:
+  public-apps:
+    external: true

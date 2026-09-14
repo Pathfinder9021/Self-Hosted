@@ -1,0 +1,119 @@
+services:      
+  nextcloud:
+    container_name: Nextcloud
+    image: nextcloud
+    user: ${PUID:-0}:${PGID:-0}
+    security_opt:
+      - "no-new-privileges:true"
+    ports:
+      - 10190:80
+    networks:
+      - private-apps-nextcloud
+      - public-apps
+    environment:
+      - NEXTCLOUD_ADMIN_USER=${NEXTCLOUD_ADMIN_USERNAME:-nextcloud}
+      - NEXTCLOUD_ADMIN_PASSWORD=${NEXTCLOUD_ADMIN_PASSWORD}
+      - NEXTCLOUD_TRUSTED_DOMAINS=${NEXTCLOUD_TRUSTED_DOMAINS}
+      - TRUSTED_PROXIES=${NEXTCLOUD_TRUSTED_PROXIES}
+      - OVERWRITEHOST=${NEXTCLOUD_OVERWRITEHOST}
+      - OVERWRITEPROTOCOL=https
+      - POSTGRES_HOST=nextcloud-database
+      - POSTGRES_DB=${NEXTCLOUD_DATABASE_SCHEMA:-nextcloud}
+      - POSTGRES_USER=${NEXTCLOUD_DATABASE_USERNAME:--nextcloud}
+      - POSTGRES_PASSWORD=${NEXTCLOUD_DATABASE_PASSWORD} 
+      - REDIS_HOST=nextcloud-redis
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${PATH_APPDATA}/nextcloud/html:/var/www/html:rw
+      - ${PATH_APPDATA}/nextcloud/custom_apps:/var/www/html/custom_apps:rw
+      - ${PATH_APPDATA}/nextcloud/config:/var/www/html/config:rw
+      - ${PATH_APPDATA}/nextcloud/data:/var/www/html/data:rw
+      - ${PATH_APPDATA}/nextcloud/themes:/var/www/html/themes:rw 
+    labels:
+      - "traefik.enable=${TRAEFIK_ENABLED:-false}"
+      - "traefik.docker.network=public-apps"
+      - "traefik.http.routers.nextcloud-http.entrypoints=web"
+      - "traefik.http.routers.nextcloud-http.rule=Host(`nextcloud.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.nextcloud-https.entrypoints=websecure"
+      - "traefik.http.routers.nextcloud-https.rule=Host(`nextcloud.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.nextcloud-https.tls=true"
+      - "traefik.http.routers.nextcloud-https.tls.certresolver=cloudflare"
+      - "traefik.http.routers.nextcloud-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.routers.nextcloud-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.services.nextcloud.loadbalancer.server.port=10190"
+    healthcheck:
+      test: curl -f http://localhost:80/ || exit 1
+    restart: unless-stopped
+    depends_on:
+      nextcloud-database:
+        condition: service_started
+      nextcloud-redis:
+        condition: service_healthy
+  
+  nextcloud-cron:
+    container_name: Nextcloud-CRON
+    image: nextcloud:apache
+    entrypoint: /cron.sh
+    user: ${PUID:-0}:${PGID:-0}
+    volumes:
+      - /etc/TZ:/etc/TZ:ro
+      - /etc/localtime:/etc/localtime:ro
+      - ${PATH_APPDATA}/nextcloud/config:/var/www/html/config:rw
+      - ${PATH_APPDATA}/nextcloud/html:/var/www/html:rw
+      - ${PATH_APPDATA}/nextcloud/custom_apps:/var/www/html/custom_apps:rw
+      - ${PATH_APPDATA}/nextcloud/data:/var/www/html/data:rw
+    networks:
+      - private-apps-nextcloud
+    restart: unless-stopped
+    depends_on:
+      nextcloud-database:
+        condition: service_started
+      nextcloud-redis:
+        condition: service_started
+
+  nextcloud-database:
+    container_name: Nextcloud-Database
+    image: docker.io/library/postgres:latest
+    user: ${PUID:-0}:${PGID:-0}
+    networks:
+      - private-apps-nextcloud
+    environment:
+      - POSTGRES_DB=${NEXTCLOUD_DATABASE_SCHEMA:-nextcloud}
+      - POSTGRES_USER=${NEXTCLOUD_DATABASE_USERNAME:-nextcloud}
+      - POSTGRES_PASSWORD=${NEXTCLOUD_DATABASE_PASSWORD}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${PATH_APPDATA}/nextcloud/database:/var/lib/postgresql
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 20s
+      test:
+      - CMD-SHELL
+      - pg_isready -d $${POSTGRES_DB:-nextcloud} -U $${POSTGRES_USER:-nextcloud}
+      timeout: 5s
+    restart: unless-stopped
+
+  nextcloud-redis:
+    container_name: Nextcloud-Redis
+    hostname: nextcloud-redis
+    image: redis
+    user: ${PUID:-0}:${PGID:-0}
+    networks:
+      - private-apps-nextcloud
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${PATH_APPDATA}/nextcloud/redis:/data:rw
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping || exit 1"]
+    restart: unless-stopped
+
+networks:
+  private-apps-nextcloud:
+    name: app-nextcloud
+    driver: bridge
+  public-apps:
+    external: true

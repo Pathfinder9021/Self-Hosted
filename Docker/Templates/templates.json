@@ -1,0 +1,192 @@
+{
+  "version": "3",
+  "templates": [
+    {
+      "type": 3,
+      "title": "Audiobookshelf",
+      "description": "A self-hosted audiobook and podcast server.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/audiobookshelf.png",
+      "categories": ["Media"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Docker-Templates",
+        "stackfile": "audiobookshelf/compose.yaml"
+      }
+    },
+    {
+      "type": 3,
+      "title": "Authentik",
+      "description": "A self-hosted, open source identity provider.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/authentik.png",
+      "categories": ["Security"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Docker-Templates",
+        "stackfile": "authentik/compose.yaml"
+      }
+    },
+    {
+      "type": 3,
+      "title": "BentoPDF",
+      "description": "A PDF multi-tool.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/bentopdf.png",
+      "categories": ["Utilities"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Docker-Templates",
+        "stackfile": "bentopdf/compose.yaml"
+      }
+    },
+    {
+      "type": 3,
+      "title": "Dockhand",
+      "description": "A powerful, modern Docker management application.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/dockhand.png",
+      "categories": ["Unknown"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Docker-Templates",
+        "stackfile": "dockhand/compose.yaml"
+      }
+    },
+    {
+      "type": 3,
+      "title": "Gitea",
+      "description": "Enables the creation and management of repositories based on Git.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/gitea.png",
+      "categories": ["Software Development"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Docker-Templates",
+        "stackfile": "gitea/compose.yaml"
+      }
+    },
+    {
+      "type": 3,
+      "title": "Home Assistant",
+      "description": "An open-source home automation that puts local control and privacy first.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/home-assistant.png",
+      "categories": ["IoT"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Docker-Templates",
+        "stackfile": "home-assistant/compose.yaml"
+      }
+    },
+    {
+      "type": 3,
+      "title": "Homepage",
+      "description": "A modern, fully static, fast, secure, fully proxied, highly customizable application dashboard.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/homepage.png",
+      "categories": ["Unknown"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Docker-Templates",
+        "stackfile": "homepage/compose.yaml"
+      }
+    },
+    {
+      "type": 3,
+      "title": "Immich",
+      "description": "A self-hosted photo and video management solution.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/immich.png",
+      "categories": ["Unknown"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Docker-Templates",
+        "stackfile": "immich/compose.yaml"
+      }
+    },
+    {
+      "type": 3,
+      "title": "Netbird",
+      "description": "A configuration-free peer-to-peer private network and a centralized access control system in a single platform.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/netbird.png",
+      "categories": ["Networking"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Docker-Templates",
+        "stackfile": "immich/compose.yaml"
+      }
+    },
+    {
+      "type": 3,
+      "title": "Nextcloud",
+      "description": "A modern, on-premises content collaboration platform with real-time document editing, video chat & groupware on mobile, desktop and web.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/nextcloud.png",
+      "categories": ["Networking"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Docker-Templates",
+        "stackfile": "nextcloud/compose.yaml"
+      }
+    },
+    {
+      "type": 3,
+      "title": "NGINX Proxy Manager",
+      "description": "An open-source reverse proxy software.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/nginx-proxy-manager.png",
+      "categories": ["Networking"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Docker-Templates",
+        "stackfile": "nginx-proxy-manager/compose.yaml"
+      }
+    },
+    {
+      "type": 3,
+      "title": "Nutify",
+      "description": "An open-source UPS monitoring and management platform.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/nutify.png",
+      "categories": ["Unknown"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Docker-Templates",
+        "stackfile": "nutify/compose.yaml"
+      }
+    },
+    {
+      "type": 3,
+      "title": "Plex",
+      "description": "A personal media server and streaming platform.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/plex.png",
+      "categories": ["Media"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Docker-Templates",
+        "stackfile": "plex/compose.yaml"
+      }
+    },
+    {
+      "type": 3,
+      "title": "Traefik",
+      "description": "A modern open source reverse proxy and ingress controller.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/traefik.png",
+      "categories": ["Networking"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Docker-Templates",
+        "stackfile": "traefik/compose.yaml"
+      }
+    },
+    {
+      "type": 3,
+      "title": "QBittorrent-ProtonVPN",
+      "description": "A free, open-source BitTorrent client with VPN.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/qbittorrent.png",
+      "categories": ["Utilities"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Docker-Templates",
+        "stackfile": "qbittorrent-protonvpn/compose.yaml"
+      }
+    },
+    {
+      "type": 3,
+      "title": "Transmission-OpenVPN",
+      "description": "A free, open-source BitTorrent client with VPN.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/transmission.png",
+      "categories": ["Utilities"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Docker-Templates",
+        "stackfile": "transmission-protonvpn/compose.yaml"
+      }
+    },
+    {
+      "type": 3,
+      "title": "UGOS-Auth-Proxy",
+      "description": "An middleware for Authentik for using UGOS as authentication provider.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/authentik.png",
+      "categories": ["Security"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Docker-Templates",
+        "stackfile": "ugos-auth-proxy/compose.yaml"
+      }
+    }
+  ]
+}

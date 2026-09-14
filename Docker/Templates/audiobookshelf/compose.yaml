@@ -1,0 +1,44 @@
+services:
+  audiobookshelf:
+    container_name: Audiobookshelf
+    image: ghcr.io/advplyr/audiobookshelf:${AUDIOBOOKSHELf_VERSION:-latest}
+    user: ${PUID:-0}:${PGID:-0}
+    security_opt:
+      - "no-new-privileges:true"
+    ports:
+      - 10100:80
+    networks:
+      - public-apps
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${PATH_APPDATA}/audiobookshelf/config:/config
+      - ${PATH_APPDATA}/audiobookshelf/metadata:/metadata
+      - ${PATH_MEDIA}:/mnt/media/books
+    labels:
+      - "traefik.enable=${TRAEFIK_ENABLED:-false}"
+      - "traefik.docker.network=public-apps"
+      - "traefik.http.routers.audiobookshelf-http.entrypoints=web"
+      - "traefik.http.routers.audiobookshelf-http.rule=Host(`audiobookshelf.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.audiobookshelf-https.entrypoints=websecure"
+      - "traefik.http.routers.audiobookshelf-https.rule=Host(`audiobookshelf.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.audiobookshelf-https.tls=true"
+      - "traefik.http.routers.audiobookshelf-https.tls.certresolver=cloudflare"
+      - "traefik.http.routers.audiobookshelf-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.routers.audiobookshelf-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.services.audiobookshelf.loadbalancer.server.port=10100"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost || exit 1
+      interval: 5m
+      timeout: 3s
+      start_period: 20s
+      start_interval: 1s
+    restart: unless-stopped
+
+networks:
+  public-apps:
+    external: true
