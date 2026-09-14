@@ -8,8 +8,8 @@
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/audiobookshelf.png",
       "categories": ["Media"],
       "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "Docker/Templates/audiobookshelf/compose.yaml"
+        "url": "https://github.com/Pathfinder9021/Self-Hosted/Docker/Templates",
+        "stackfile": "audiobookshelf/compose.yaml"
       }
     },
     {
@@ -19,8 +19,8 @@
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/authentik.png",
       "categories": ["Security"],
       "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "Docker/Templates/authentik/compose.yaml"
+        "url": "https://github.com/Pathfinder9021/Self-Hosted/Docker/Templates",
+        "stackfile": "authentik/compose.yaml"
       }
     },
     {
@@ -30,8 +30,8 @@
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/bentopdf.png",
       "categories": ["Utilities"],
       "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "Docker/Templates/bentopdf/compose.yaml"
+        "url": "https://github.com/Pathfinder9021/Self-Hosted/Docker/Templates",
+        "stackfile": "bentopdf/compose.yaml"
       }
     },
     {
@@ -41,8 +41,8 @@
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/dockhand.png",
       "categories": ["Unknown"],
       "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "/Docker/Templatesdockhand/compose.yaml"
+        "url": "https://github.com/Pathfinder9021/Self-Hosted/Docker/Templates",
+        "stackfile": "dockhand/compose.yaml"
       }
     },
     {
@@ -52,8 +52,8 @@
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/gitea.png",
       "categories": ["Software Development"],
       "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "/Docker/Templatesgitea/compose.yaml"
+        "url": "https://github.com/Pathfinder9021/Self-Hosted/Docker/Templates",
+        "stackfile": "gitea/compose.yaml"
       }
     },
     {
@@ -63,8 +63,8 @@
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/home-assistant.png",
       "categories": ["IoT"],
       "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "Docker/Templates/home-assistant/compose.yaml"
+        "url": "https://github.com/Pathfinder9021/Self-Hosted/Docker/Templates",
+        "stackfile": "home-assistant/compose.yaml"
       }
     },
     {
@@ -74,8 +74,8 @@
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/homepage.png",
       "categories": ["Unknown"],
       "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "Docker/Templates/homepage/compose.yaml"
+        "url": "https://github.com/Pathfinder9021/Self-Hosted/Docker/Templates",
+        "stackfile": "homepage/compose.yaml"
       }
     },
     {
@@ -85,8 +85,8 @@
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/immich.png",
       "categories": ["Unknown"],
       "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "Docker/Templates/immich/compose.yaml"
+        "url": "https://github.com/Pathfinder9021/Self-Hosted/Docker/Templates",
+        "stackfile": "immich/compose.yaml"
       }
     },
     {
@@ -96,8 +96,8 @@
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/netbird.png",
       "categories": ["Networking"],
       "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "Docker/Templates/immich/compose.yaml"
+        "url": "https://github.com/Pathfinder9021/Self-Hosted/Docker/Templates",
+        "stackfile": "immich/compose.yaml"
       }
     },
     {
@@ -107,8 +107,8 @@
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/nextcloud.png",
       "categories": ["Networking"],
       "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "Docker/Templates/nextcloud/compose.yaml"
+        "url": "https://github.com/Pathfinder9021/Self-Hosted/Docker/Templates",
+        "stackfile": "nextcloud/compose.yaml"
       }
     },
     {
@@ -118,8 +118,8 @@
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/nginx-proxy-manager.png",
       "categories": ["Networking"],
       "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "Docker/Templates/nginx-proxy-manager/compose.yaml"
+        "url": "https://github.com/Pathfinder9021/Self-Hosted/Docker/Templates",
+        "stackfile": "nginx-proxy-manager/compose.yaml"
       }
     },
     {
@@ -129,8 +129,8 @@
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/nutify.png",
       "categories": ["Unknown"],
       "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "Docker/Templates/nutify/compose.yaml"
+        "url": "https://github.com/Pathfinder9021/Self-Hosted/Docker/Templates",
+        "stackfile": "nutify/compose.yaml"
       }
     },
     {
@@ -140,8 +140,8 @@
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/plex.png",
       "categories": ["Media"],
       "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "Docker/Templates/plex/compose.yaml"
+        "url": "https://github.com/Pathfinder9021/Self-Hosted/Docker/Templates",
+        "stackfile": "plex/compose.yaml"
       }
     },
     {
@@ -151,8 +151,8 @@
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/traefik.png",
       "categories": ["Networking"],
       "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "Docker/Templates/traefik/compose.yaml"
+        "url": "https://github.com/Pathfinder9021/Self-Hosted/Docker/Templates",
+        "stackfile": "traefik/compose.yaml"
       }
     },
     {
@@ -162,8 +162,8 @@
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/qbittorrent.png",
       "categories": ["Utilities"],
       "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "Docker/Templates/qbittorrent-protonvpn/compose.yaml"
+        "url": "https://github.com/Pathfinder9021/Self-Hosted/Docker/Templates",
+        "stackfile": "qbittorrent-protonvpn/compose.yaml"
       }
     },
     {
@@ -173,8 +173,8 @@
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/transmission.png",
       "categories": ["Utilities"],
       "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "Docker/Templates/transmission-protonvpn/compose.yaml"
+        "url": "https://github.com/Pathfinder9021/Self-Hosted/Docker/Templates",
+        "stackfile": "transmission-protonvpn/compose.yaml"
       }
     },
     {
@@ -184,8 +184,8 @@
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/authentik.png",
       "categories": ["Security"],
       "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "Docker/Templates/ugos-auth-proxy/compose.yaml"
+        "url": "https://github.com/Pathfinder9021/Self-Hosted/Docker/Templates",
+        "stackfile": "ugos-auth-proxy/compose.yaml"
       }
     }
   ]
