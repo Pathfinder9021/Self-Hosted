@@ -21,8 +21,6 @@ Deployment options:
 
 Default port: 8080 (configurable via PORT environment variable)
 
-Author: Sergey Gladkovskiy <smgladkovskiy@gmail.com>
-License: MIT
 """
 
 from __future__ import annotations
@@ -38,8 +36,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
-__version__ = "0.2.0"
-__author__ = "Sergey Gladkovskiy <smgladkovskiy@gmail.com>"
+__version__ = "1.0.0"
 
 # Configuration
 DEFAULT_PORT = 8080

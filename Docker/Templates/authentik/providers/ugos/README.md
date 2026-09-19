@@ -39,37 +39,19 @@ This service enables authentik to authenticate UGOS NAS users without storing pa
 4. Policy creates user in authentik with UGOS attributes
 5. User is logged in
 
+
 ## Quick Start
 
-### Docker (Recommended)
+### Docker
 
 ```bash
-# Clone the repository
-git clone https://github.com/smgladkovskiy/ugos-auth-proxy.git
-cd ugos-auth-proxy
-
 # Start the container
 docker compose up -d
 
 # Verify it's running
-curl http://localhost:8180/health
+curl http://localhost:9980/health
 ```
 
-### Systemd (Alternative)
-
-```bash
-# Copy files
-sudo mkdir -p /opt/ugos-auth-proxy
-sudo cp main.py /opt/ugos-auth-proxy/
-sudo cp ugos-auth-proxy.service /etc/systemd/system/
-
-# Enable and start
-sudo systemctl daemon-reload
-sudo systemctl enable --now ugos-auth-proxy
-
-# Check status
-sudo systemctl status ugos-auth-proxy
-```
 
 ## API Reference
 
@@ -158,57 +140,105 @@ Readiness probe for Kubernetes.
 }
 ```
 
-## authentik Integration
+
+## Authentik Integration
 
 ### 1. Create Groups
 
-Create the following groups in authentik (Directory -> Groups):
+Go to __Directory -> Groups__ and create the following groups.
 
-| Group Name   | Description                        |
-|--------------|------------------------------------|
-| `UGOS Users` | All auto-provisioned UGOS users    |
-| `admins`     | Administrators (mapped from UGOS)  |
-| `family`     | Family members (mapped from UGOS)  |
+  | Group Name            | Description                        |
+  |-----------------------|------------------------------------|
+  | `UGOS Users`          | All auto-provisioned UGOS users    |
+  | `UGOS Admins`         | Administrators (mapped from UGOS)  |
+  | `UGOS Family`         | Family members (mapped from UGOS)  |
 
-### 2. Create Authentication Flow
 
-Create a flow named `ugos-authentication` with the following stages:
+### 2. Create Prompts
 
-| Order | Stage                      | Type                | Configuration                     |
-|-------|----------------------------|---------------------|-----------------------------------|
-| 10    | ugos-find-user-stage       | IdentificationStage | `pretend_user_exists=True`        |
-| 20    | ugos-password-prompt-stage | PromptStage         | Password field only               |
-| 25    | ugos-password-deny-stage   | DenyStage           | Policy binding with `negate=True` |
-| 100   | ugos-user-login-stage      | UserLoginStage      | Default settings                  |
+Go to __Flows and Stages -> Prompts__ and create the following prompts.
 
-> **Important:** Set `pretend_user_exists=True` on IdentificationStage to enable auto-provisioning for new users.
+- Create a prompt with a name `ugos-password-prompt`
 
-### 3. Create Expression Policy
+  | Prompt Property       | Prompt Property Value              |
+  |-----------------------|------------------------------------|
+  | Name                  | ugos-password-prompt               |
+  | Field Key             | password                           |
+  | Label                 | Password                           |
+  | Type                  | Password: Masked input             |
+  | Required              | True                               |
+  | Placeholder           | Password                           |
+  | Order                 | 300                                |
 
-Create a policy named `ugos-password-validation-policy` and bind it to `ugos-password-deny-stage` with **negate=True**.
 
-This policy handles both password validation and auto-provisioning.
+### 3. Create Stages
 
-📄 **Copy the policy code from:** [`authentik-policy.py`](authentik-policy.py)
+Go to __Flows and Stages -> Stages__ and create the following stages.
+
+- Create a stage with a name `ugos-user-identification-stage`
+
+  | Stage Property        | Stage Property Value               |
+  |-----------------------|------------------------------------|
+  | Type                  | Identification Stage               |
+  | Name                  | ugos-user-identification-stage     |
+  | User Fields           | Username                           | 
+  | Pretend User Exists   | True                               |
+
+  > **Important:** Set `pretend_user_exists=True` to enable auto-provisioning for new users.
+
+- Create a stage with a name `ugos-user-login-stage` 
+  
+  | Stage Property        | Stage Property Value               |
+  |-----------------------|------------------------------------|
+  | Type                  | User Login Stage                   |
+  | Name                  | ugos-user-login-stage              |
+  | Session Duration      | seconds=0                          |
+  | Stay Signed In Offset | seconds=0                          |
+  | Remember Device       | days=30                            |
+  | Network Binding       | Bind ASN                           |
+  | GeoIP Binding         | Bind Continent                     |
+
+- Create a stage with a name `ugos-password-prompt-stage`
+
+  | Stage Property        | Stage Property Value               |
+  |-----------------------|------------------------------------|
+  | Type                  | Prompt Stage                       |
+  | Name                  | ugos-password-prompt-stage         |
+  | Fields                | ugos-password-prompt               |
+  | Validation Policies   | -                                  |
+
+- Create a stage with a name `ugos-password-deny-stage`
+
+  | Stage Property        | Stage Property Value               |
+  |-----------------------|------------------------------------|
+  | Type                  | Deny Stage                         |
+  | Name                  | ugos-password-deny-stage           |
+  | Deny Message          | Failed                             |
+
+
+### 4. Create Expression Policy
+
+Go to __Customization -> Policies__ and create a policy with a name `ugos-credentials-validation-policy`
+
+  | Policy Property       | Policu Field Property              |
+  |-----------------------|------------------------------------|
+  | Type                  | Expression Policy                  |
+  | Name                  | ugos-credentials-validation-policy |
+  | Expresssion           | Copy from authentik-policy.py      |
 
 > **Configuration:** Edit the variables at the top of the policy:
 > - `UGOS_AUTH_PROXY_URL` — your ugos-auth-proxy address
 > - `DEFAULT_EMAIL_DOMAIN` — default email domain for users
 > - `GROUP_MAP` — UGOS to authentik group mapping
 
-
-### 4. Group Mapping
-
 The policy automatically maps UGOS groups to authentik groups:
 
 | UGOS Group | authentik Group | Description        |
 |------------|-----------------|--------------------|
-| `admin`    | `admins`        | NAS administrators |
-| `family`   | `family`        | Family members     |
+| `admin`    | `UGOS Admins`        | NAS administrators |
+| `family`   | `UGOS Family`        | Family members     |
 
-All auto-provisioned users are added to `UGOS Users` group.
-
-### 5. User Attributes
+This policy handles both password validation and auto-provisioning. All auto-provisioned users are added to `UGOS Users` group.
 
 Auto-provisioned users will have these attributes:
 
@@ -223,6 +253,33 @@ Auto-provisioned users will have these attributes:
 }
 ```
 
+### 5. Create Authentication Flow
+
+Go to __Flows and Stages -> Flows__ and create a flow with a name `ugos-authentication-flow` 
+
+  | Flow Property         | Flow Field Property                |
+  |-----------------------|------------------------------------|
+  | Name                  | ugos-authentication-flow           |
+  | Title                 | Welcome to UGOS                    |
+  | Slug                  | ugos-authentication                |
+  | Designation           | Authentication                     |
+  | Authentication        | Require no authentication          |
+
+Navigate to flow's Stage binding tab and bind the following stages to it
+
+  | Order                 | Stage                              |
+  |-----------------------|------------------------------------|
+  | 10                    | ugos-user-identification-stage     |
+  | 100                   | ugos-user-login-stage              |
+  | 20                    | ugos-password-prompt-stage         |
+  | 25                    | ugos-password-deny-stage           |
+  
+  > Set __Evaluate when flow is planned__ to __False__, __Evaluate when stage is run__ to __True__, __Invalid response behavior__ to __RETRY__ and __Policy engine mode__ to __ANY__.
+ 
+After that expand the binding for the `ugos-password-deny-stage` stage and bind the `ugos-credentials-validation-policy` policy  to `ugos-password-deny-stage` with __Enabled__ set to __True__ and __Negate Result__ to __True__.
+
+> Use inspector to verify the policy. 
+
 ### 6. Set Default Flow
 
 In Brand settings (System -> Brands), set `ugos-authentication` as the default authentication flow.
@@ -234,13 +291,6 @@ For emergency access with local admin (e.g., `akadmin`), use:
 https://your-authentik-url/if/flow/default-authentication-flow/
 ```
 
-## Configuration
-
-### Environment Variables
-
-| Variable | Default | Description  |
-|----------|---------|--------------|
-| `PORT`   | `8080`  | Service port |
 
 ## Testing
 
@@ -296,11 +346,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Author
-
-**Sergey Gladkovskiy** - [@smgladkovskiy](https://github.com/smgladkovskiy)
-
----
-
-If you find this project useful, please consider giving it a ⭐!

@@ -2,6 +2,8 @@
 
 This is a respository with predefined templates for running service in Docker.
 
+ttps://raw.githubusercontent.com/Pathfinder9021/Self-Hosted/refs/heads/main/Docker/Templates/templates.json
+
 ## Prerequisites
 
 - Temples expects a Docker network named "public-apps" to exist.

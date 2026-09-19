@@ -7,7 +7,7 @@
 
 services:
   authentik-ugos-auth-proxy:
-    build: ./src  # or ./plugins/ugos-auth-proxy/src
+    build: ./src/ugos-auth-proxy  # or ./providers/ugos/src/ugos-auth-proxy
     container_name: authentik-ugos-auth-proxy
     # Expose port only if required
     #ports:
@@ -23,7 +23,7 @@ services:
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
     healthcheck:
-      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9980/health')"]
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
       interval: 30s
       timeout: 5s
       start_period: 10s

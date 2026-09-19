@@ -8,11 +8,11 @@ entries:
     designation: authentication
     layout: stacked
     name: ugos-authentication-flow
-    policy_engine_mode: any
-    title: Sign In
+    policy_engine_mode: all
+    title: Welcome to Synnax
   conditions: []
   identifiers:
-    pk: 33e4be56-9220-4792-9650-583ea2224bb3
+    pk: e8a9c35a-a3d7-4c30-9605-0f5233b05d82
     slug: ugos-authentication-flow
   model: authentik_flows.flow
   permissions: []
@@ -22,36 +22,32 @@ entries:
     initial_value: ''
     initial_value_expression: false
     label: Password
-    name: initial-setup-field-password
+    name: ugos-password-prompt
     order: 300
     placeholder: Password
     placeholder_expression: false
-    required: true
+    required: false
     sub_text: ''
     type: password
   conditions: []
   identifiers:
-    pk: fa68646d-e79e-4fd3-bf71-652eacba2362
+    pk: db6e5187-b41c-424e-95ba-c9d14b31f3d3
   model: authentik_stages_prompt.prompt
   permissions: []
   state: present
 - attrs:
-    execution_logging: false
-    expression: "\"\"\"\nauthentik Expression Policy: ugos-password-validation-policy\n\
-      \nThis policy handles UGOS user authentication and auto-provisioning.\nCopy\
-      \ this code to authentik: Customization -> Policies -> Create -> Expression\
-      \ Policy\n\nBind to `ugos-password-deny-stage` with negate=True\n\"\"\"\n\n\
-      import requests\nfrom authentik.core.models import User, Group\n\n# ==========\
-      \ Configuration ==========\n# Change these values to match your environment\n\
-      UGOS_AUTH_PROXY_URL = \"http://192.168.11.90:8180\"  # Your ugos-auth-proxy\
-      \ address\nUSER_PATH = \"ugos\"                                 # Path for auto-provisioned\
-      \ users\nDEFAULT_EMAIL_DOMAIN = \"gmail.com\"  # Default email domain\nUGOS_USERS_GROUP\
-      \ = \"UGOS Users\"                    # Group for all UGOS users\n\n# UGOS group\
-      \ -> authentik group mapping\nGROUP_MAP = {\n    \"admin\": \"admins\",\n  \
-      \  \"family\": \"family\",\n}\n\n# ========== Get password from prompt_data\
-      \ ==========\npassword = request.context.get(\"prompt_data\", {}).get(\"password\"\
-      )\nif not password:\n    ak_message(\"Password is required\")\n    return False\n\
-      \n# ========== Get pending_user from context ==========\npending_user = request.context.get(\"\
+    execution_logging: true
+    expression: "import requests\nfrom authentik.core.models import User, Group\n\n\
+      # ========== Configuration ==========\n# Change these values to match your environment\n\
+      UGOS_AUTH_PROXY_URL = \"http://authentik-ugos-auth-proxy:9980\"  # Your ugos-auth-proxy\
+      \ address\nUSER_PATH = \"ugos\"                                            \
+      \ # Path for auto-provisioned users\nUGOS_USERS_GROUP = \"UGOS Users\"     \
+      \                           # Group for all UGOS users\n\n# UGOS group -> authentik\
+      \ group mapping\nGROUP_MAP = {\n    \"admin\": \"UGOS Admins\",\n    \"family\"\
+      : \"UGOS Family\",\n}\n\n# ========== Get password from prompt_data ==========\n\
+      password = request.context.get(\"prompt_data\", {}).get(\"password\")\nif not\
+      \ password:\n    ak_message(\"Password is required\")\n    return False\n\n\
+      # ========== Get pending_user from context ==========\npending_user = request.context.get(\"\
       pending_user\")\nif not pending_user:\n    ak_message(\"User identification\
       \ failed\")\n    return False\n\nusername = pending_user.username\n\n# ==========\
       \ Check if user is real (has pk) or fake (pretend_user_exists) ==========\n\
@@ -75,8 +71,7 @@ entries:
       full_name\", username)\n        if not full_name or full_name == username or\
       \ full_name == \"UGREEN USER\":\n            full_name = username.replace(\"\
       .\", \" \").replace(\"_\", \" \").title()\n\n        email = user_info.get(\"\
-      email\", \"\")\n        if not email:\n            email = f\"{username}@{DEFAULT_EMAIL_DOMAIN}\"\
-      \n\n        real_user = User.objects.create(\n            username=username,\n\
+      email\", \"\")\n\n        real_user = User.objects.create(\n            username=username,\n\
       \            name=full_name,\n            email=email,\n            path=USER_PATH,\n\
       \            attributes={\n                \"ugos_user\": True,\n          \
       \      \"ugos_uid\": user_info.get(\"uid\"),\n                \"ugos_gid\":\
@@ -109,22 +104,33 @@ entries:
       \            ak_message(\"Invalid password\")\n            return False\n  \
       \  except Exception as e:\n        ak_message(f\"Authentication service error:\
       \ {str(e)}\")\n        return False"
-    name: ugos-password-validation-policy
+    name: ugos-credentials-validation-policy
   conditions: []
   identifiers:
-    pk: 46be1fd5-ad2d-4b3f-ba23-c6feb4b34aaa
+    pk: baf798d0-ddad-48f5-98ab-06227e1928f9
   model: authentik_policies_expression.expressionpolicy
   permissions: []
   state: present
 - attrs:
-    fields:
-    - fa68646d-e79e-4fd3-bf71-652eacba2362
-    validation_policies: []
+    captcha_stage: null
+    case_insensitive_matching: true
+    enable_remember_me: false
+    enrollment_flow: null
+    password_stage: null
+    passwordless_flow: null
+    pretend_user_exists: true
+    recovery_flow: null
+    show_matched_user: true
+    show_source_labels: false
+    sources: []
+    user_fields:
+    - username
+    webauthn_stage: null
   conditions: []
   identifiers:
-    name: ugos-password-prompt-stage
-    pk: faf57e38-d172-4425-ad3a-cf7533bd514d
-  model: authentik_stages_prompt.promptstage
+    name: ugos-user-identification-stage
+    pk: 1d322230-062f-463e-8672-c3660d3ac0fa
+  model: authentik_stages_identification.identificationstage
   permissions: []
   state: present
 - attrs:
@@ -137,39 +143,28 @@ entries:
   conditions: []
   identifiers:
     name: ugos-user-login-stage
-    pk: 7309034f-0c3e-4627-8131-7685fe8993ce
+    pk: e12b2eab-4ae6-4be7-8a4a-5f3e723a9eeb
   model: authentik_stages_user_login.userloginstage
   permissions: []
   state: present
 - attrs:
-    deny_message: Incorrect account or password, please log in again
+    fields:
+    - db6e5187-b41c-424e-95ba-c9d14b31f3d3
+    validation_policies: []
   conditions: []
   identifiers:
-    name: ugos-password-deny-stage
-    pk: b259533a-9233-4ce6-bc26-5c26c957c871
-  model: authentik_stages_deny.denystage
+    name: ugos-password-prompt-stage
+    pk: 81926d8c-7eb6-4686-a3c5-9bd59286b41f
+  model: authentik_stages_prompt.promptstage
   permissions: []
   state: present
 - attrs:
-    captcha_stage: null
-    case_insensitive_matching: true
-    enable_remember_me: false
-    enrollment_flow: null
-    password_stage: null
-    passwordless_flow: null
-    pretend_user_exists: true
-    recovery_flow: null
-    show_matched_user: false
-    show_source_labels: false
-    sources: []
-    user_fields:
-    - username
-    webauthn_stage: null
+    deny_message: Failed
   conditions: []
   identifiers:
-    name: ugos-find-user-stage
-    pk: 4f81b92c-7c0c-465c-90a3-155971cc2b8d
-  model: authentik_stages_identification.identificationstage
+    name: ugos-password-deny-stage
+    pk: 0af3171d-6103-45b7-88bc-db77b215f975
+  model: authentik_stages_deny.denystage
   permissions: []
   state: present
 - attrs:
@@ -180,9 +175,9 @@ entries:
   conditions: []
   identifiers:
     order: 10
-    pk: 0f9cf087-7c58-4c14-8d0e-68fce4a1d808
-    stage: 4f81b92c-7c0c-465c-90a3-155971cc2b8d
-    target: 33e4be56-9220-4792-9650-583ea2224bb3
+    pk: 22694b7b-d964-44b0-8300-a13f2206e2d1
+    stage: 1d322230-062f-463e-8672-c3660d3ac0fa
+    target: e8a9c35a-a3d7-4c30-9605-0f5233b05d82
   model: authentik_flows.flowstagebinding
   permissions: []
   state: present
@@ -194,9 +189,9 @@ entries:
   conditions: []
   identifiers:
     order: 20
-    pk: 4084972f-b9d2-4091-b689-9072051ceacf
-    stage: faf57e38-d172-4425-ad3a-cf7533bd514d
-    target: 33e4be56-9220-4792-9650-583ea2224bb3
+    pk: a10d81f8-ba9e-4cab-b51b-04e31f0940f2
+    stage: 81926d8c-7eb6-4686-a3c5-9bd59286b41f
+    target: e8a9c35a-a3d7-4c30-9605-0f5233b05d82
   model: authentik_flows.flowstagebinding
   permissions: []
   state: present
@@ -208,9 +203,9 @@ entries:
   conditions: []
   identifiers:
     order: 25
-    pk: 70711e54-ab74-40a5-95ef-4f1062b5ca16
-    stage: b259533a-9233-4ce6-bc26-5c26c957c871
-    target: 33e4be56-9220-4792-9650-583ea2224bb3
+    pk: a7cd676d-2142-488a-8293-c0b0be93bf7d
+    stage: 0af3171d-6103-45b7-88bc-db77b215f975
+    target: e8a9c35a-a3d7-4c30-9605-0f5233b05d82
   model: authentik_flows.flowstagebinding
   permissions: []
   state: present
@@ -222,9 +217,9 @@ entries:
   conditions: []
   identifiers:
     order: 100
-    pk: a3b5d471-4c5b-44e6-94e0-44e61ef7ebd3
-    stage: 7309034f-0c3e-4627-8131-7685fe8993ce
-    target: 33e4be56-9220-4792-9650-583ea2224bb3
+    pk: 0ce79ee5-53b7-4075-ac63-9c1667ad5b76
+    stage: e12b2eab-4ae6-4be7-8a4a-5f3e723a9eeb
+    target: e8a9c35a-a3d7-4c30-9605-0f5233b05d82
   model: authentik_flows.flowstagebinding
   permissions: []
   state: present
@@ -238,14 +233,14 @@ entries:
   conditions: []
   identifiers:
     order: 0
-    pk: 23d4eae4-e5c0-4f5d-9931-65f562b7c513
-    policy: 46be1fd5-ad2d-4b3f-ba23-c6feb4b34aaa
-    target: 70711e54-ab74-40a5-95ef-4f1062b5ca16
+    pk: fbb296af-ef53-44af-ab5c-b59681c3b297
+    policy: baf798d0-ddad-48f5-98ab-06227e1928f9
+    target: a7cd676d-2142-488a-8293-c0b0be93bf7d
   model: authentik_policies.policybinding
   permissions: []
   state: present
 metadata:
   labels:
     blueprints.goauthentik.io/generated: 'true'
-  name: authentik Export - 2026-06-27 10:00:54.191015+00:00
+  name: authentik Export - 2026-09-19 13:07:22.638571+00:00
 version: 1

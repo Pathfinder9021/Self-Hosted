@@ -1,26 +1,16 @@
-"""
-authentik Expression Policy: ugos-password-validation-policy
-
-This policy handles UGOS user authentication and auto-provisioning.
-Copy this code to authentik: Customization -> Policies -> Create -> Expression Policy
-
-Bind to `ugos-password-deny-stage` with negate=True
-"""
-
 import requests
 from authentik.core.models import User, Group
 
 # ========== Configuration ==========
 # Change these values to match your environment
-UGOS_AUTH_PROXY_URL = "http://192.168.0.40:8180"  # Your ugos-auth-proxy address
-USER_PATH = "ugos"                                 # Path for auto-provisioned users
-DEFAULT_EMAIL_DOMAIN = "example.com"               # Default email domain
-UGOS_USERS_GROUP = "UGOS Users"                    # Group for all UGOS users
+UGOS_AUTH_PROXY_URL = "http://authentik-ugos-auth-proxy:9980"  # Your ugos-auth-proxy address
+USER_PATH = "ugos"                                             # Path for auto-provisioned users
+UGOS_USERS_GROUP = "UGOS Users"                                # Group for all UGOS users
 
 # UGOS group -> authentik group mapping
 GROUP_MAP = {
-    "admin": "admins",
-    "family": "family",
+    "admin": "UGOS Admins",
+    "family": "UGOS Family",
 }
 
 # ========== Get password from prompt_data ==========
@@ -82,8 +72,6 @@ if user_is_fake:
             full_name = username.replace(".", " ").replace("_", " ").title()
 
         email = user_info.get("email", "")
-        if not email:
-            email = f"{username}@{DEFAULT_EMAIL_DOMAIN}"
 
         real_user = User.objects.create(
             username=username,
