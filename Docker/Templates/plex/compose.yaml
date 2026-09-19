@@ -3,7 +3,7 @@ services:
     container_name: plex
     hostname: Plex
     image: ghcr.io/linuxserver/plex:${PLEX_VERSION:-latest}
-    user: ${PUID:-0}:${PGID:0}
+    user: ${PUID:-0}:${PGID:-0}
     security_opt:
       - no-new-privileges:true
     mem_limit: 8g
@@ -27,5 +27,9 @@ services:
       - ${PATH_APPDATA}/plex/config:/config:rw
       - ${PATH_MEDIA}:/mnt/media/videos:rw
     healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:32400/web
+      test: curl --connect-timeout 15 --silent --show-error --fail http://localhost:32400/identity
+      interval: 1m00s
+      timeout: 15s
+      retries: 3
+      start_period: 1m00s
     restart: unless-stopped

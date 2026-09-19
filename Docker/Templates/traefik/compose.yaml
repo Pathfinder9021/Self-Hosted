@@ -1,6 +1,6 @@
 services:
   traefik:
-    container_name: Traefik
+    container_name: traefik
     image: traefik:latest
     user: ${PUID:-0}:${PGID:-0}
     security_opt:

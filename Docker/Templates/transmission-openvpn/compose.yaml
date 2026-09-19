@@ -28,6 +28,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ${PATH_APPDATA}/transmission-openvpn/data:/data
       - ${PATH_APPDATA}/transmission-openvpn/config:/config
+      - ${PATH_APPDATA}/transmission-openvpn/protonvpn/:/etc/openvpn/custom/
       - ${PATH_MEDIA}:/mnt/media/downloads
     labels:
       - "traefik.enable=${TRAEFIK_ENABLED:-false}"
