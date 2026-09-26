@@ -24,19 +24,22 @@ services:
       - ${PATH_APPDATA}/immich/data:/data
       - ${PATH_MEDIA}:/mnt/media/photos
     labels:
-      - "traefik.enable=${TRAEFIK_ENABLED:-false}"
+      - "traefik.enable=${TRAEFIK_ENABLED}"
       - "traefik.docker.network=public-apps"
-      #- "traefik.http.routers.immich-http.entrypoints=web"
-      #- "traefik.http.routers.immich-http.rule=Host(`immich.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.immich-https.entrypoints=websecure"
-      - "traefik.http.routers.immich-https.rule=Host(`immich.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.immich-https.rule=Host(`immich.${TRAEFIK_CF_DNS_DOMAIN:-''}`)"
       - "traefik.http.routers.immich-https.service=immich"
       - "traefik.http.routers.immich-https.tls=true"
       - "traefik.http.routers.immich-https.tls.certresolver=cloudflare"
-      - "traefik.http.routers.immich-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
-      - "traefik.http.routers.immich-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.routers.immich-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "traefik.http.routers.immich-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN:-''}"
       - "traefik.http.services.immich.loadbalancer.server.port=2283"
       - "traefik.http.services.immich.loadbalancer.server.scheme=http"
+      - "homepage.name=Immich"
+      - "homepage.group=Media"
+      - "homepage.icon=https://raw.githubusercontent.com/homarr-labs/dashboard-icons/refs/heads/main/svg/immich.svg"
+      - "homepage.href=https://immich.${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "homepage.description=Photo and video management"
     healthcheck:
       disable: false
     restart: unless-stopped

@@ -26,6 +26,24 @@ services:
     volumes:
       - ${PATH_APPDATA}/plex/config:/config:rw
       - ${PATH_MEDIA}:/mnt/media/videos:rw
+    labels:
+      - "traefik.enable=${TRAEFIK_ENABLED}"
+      - "traefik.docker.network=public-apps"
+      - "traefik.http.routers.plex-https.entrypoints=websecure"
+      - "traefik.http.routers.plex-https.rule=Host(`plex.${TRAEFIK_CF_DNS_DOMAIN:-''}`)"
+      - "traefik.http.routers.plex-https.service=plex"
+      - "traefik.http.routers.plex-https.tls=true"
+      - "traefik.http.routers.plex-https.tls.certresolver=cloudflare"
+      - "traefik.http.routers.plex-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "traefik.http.routers.plex-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "traefik.http.services.plex.loadbalancer.serverstransport=insecure-transport@file"
+      - "traefik.http.services.plex.loadbalancer.responseforwarding.flushinterval=100ms"
+      - "traefik.http.services.plex.loadbalancer.server.url=https://<HostIpAddress>:32400"
+      - "homepage.name=Plex"
+      - "homepage.group=Media"
+      - "homepage.icon=https://raw.githubusercontent.com/homarr-labs/dashboard-icons/refs/heads/main/svg/plex.svg"
+      - "homepage.href=https://plex.${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "homepage.description=Media streaming platform"
     healthcheck:
       test: curl --connect-timeout 15 --silent --show-error --fail http://localhost:32400/identity
       interval: 1m00s

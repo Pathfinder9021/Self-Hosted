@@ -1,7 +1,7 @@
 services:
   traefik:
     container_name: traefik
-    image: traefik:latest
+    image: traefik:${TRAEFIK_VERSION:-latest}
     user: ${PUID:-0}:${PGID:-0}
     security_opt:
       - "no-new-privileges:true"
@@ -19,24 +19,27 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ${PATH_APPDATA}/traefik/config/traefik.yaml:/etc/traefik/traefik.yaml:ro
-      - ${PATH_APPDATA}/traefik/config/dynamic.yaml:/etc/traefik/dynamic.yaml/:ro
-      - ${PATH_APPDATA}/traefik/certs/:/var/traefik/certs/:rw
+      - ${PATH_APPDATA?requried}/traefik/config/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - ${PATH_APPDATA?requried}/traefik/config/dynamic.yaml:/etc/traefik/dynamic.yaml/:ro
+      - ${PATH_APPDATA?requried}/traefik/certs/:/var/traefik/certs/:rw
     labels:
-      - "traefik.enable=${TRAEFIK_ENABLED:-false}"
+      - "traefik.enable=${TRAEFIK_ENABLED}"
       - "traefik.docker.network=public-apps"
-      #- "traefik.http.routers.traefik-http.entrypoints=web"
-      #- "traefik.http.routers.traefik-http.rule=Host(`traefik.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.traefik-https.entrypoints=websecure"
-      - "traefik.http.routers.traefik-https.rule=Host(`traefik.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.traefik-https.rule=Host(`traefik.${TRAEFIK_CF_DNS_DOMAIN:-''}`)"
       - "traefik.http.routers.traefik-https.service=traefik"
       - "traefik.http.routers.traefik-https.middlewares=authentik@file"
       - "traefik.http.routers.traefik-https.tls=true"
       - "traefik.http.routers.traefik-https.tls.certresolver=cloudflare"
-      - "traefik.http.routers.traefik-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
-      - "traefik.http.routers.traefik-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.routers.traefik-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "traefik.http.routers.traefik-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN:-''}"
       - "traefik.http.services.traefik.loadbalancer.server.port=8080"
       - "traefik.http.services.traefik.loadbalancer.server.scheme=http"
+      - "homepage.name=Traefik"
+      - "homepage.group=DevOps"
+      - "homepage.icon=https://raw.githubusercontent.com/homarr-labs/dashboard-icons/refs/heads/main/svg/traefik.svg"
+      - "homepage.href=http://traefik.${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "homepage.description=Reverse proxy and load balancer"
     logging:
       driver: json-file
       options:

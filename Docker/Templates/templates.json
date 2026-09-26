@@ -17,7 +17,7 @@
       "title": "Authentik",
       "description": "A self-hosted, open source identity provider.",
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/authentik.png",
-      "categories": ["Security"],
+      "categories": ["DevOps"],
       "repository": {
         "url": "https://github.com/Pathfinder9021/Self-Hosted",
         "stackfile": "Docker/Templates/authentik/compose.yaml"
@@ -28,7 +28,7 @@
       "title": "BentoPDF",
       "description": "A PDF multi-tool.",
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/bentopdf.png",
-      "categories": ["Utilities"],
+      "categories": ["Tools"],
       "repository": {
         "url": "https://github.com/Pathfinder9021/Self-Hosted",
         "stackfile": "Docker/Templates/bentopdf/compose.yaml"
@@ -36,10 +36,21 @@
     },
     {
       "type": 3,
+      "title": "Bookorbit",
+      "description": "A PDF multi-tool.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/bookorbit.png",
+      "categories": ["Media"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Self-Hosted",
+        "stackfile": "Docker/Templates/bookorbit/compose.yaml"
+      }
+    },
+    {
+      "type": 3,
       "title": "Dockhand",
       "description": "A powerful, modern Docker management application.",
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/dockhand.png",
-      "categories": ["Unknown"],
+      "categories": ["DevOps"],
       "repository": {
         "url": "https://github.com/Pathfinder9021/Self-Hosted",
         "stackfile": "Docker/Templates/dockhand/compose.yaml"
@@ -72,7 +83,7 @@
       "title": "Homepage",
       "description": "A modern, fully static, fast, secure, fully proxied, highly customizable application dashboard.",
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/homepage.png",
-      "categories": ["Unknown"],
+      "categories": ["DevOps"],
       "repository": {
         "url": "https://github.com/Pathfinder9021/Self-Hosted",
         "stackfile": "Docker/Templates/homepage/compose.yaml"
@@ -83,7 +94,7 @@
       "title": "Immich",
       "description": "A self-hosted photo and video management solution.",
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/immich.png",
-      "categories": ["Unknown"],
+      "categories": ["Media"],
       "repository": {
         "url": "https://github.com/Pathfinder9021/Self-Hosted",
         "stackfile": "Docker/Templates/immich/compose.yaml"
@@ -94,7 +105,7 @@
       "title": "Netbird",
       "description": "A configuration-free peer-to-peer private network and a centralized access control system in a single platform.",
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/netbird.png",
-      "categories": ["Networking"],
+      "categories": ["DevOps"],
       "repository": {
         "url": "https://github.com/Pathfinder9021/Self-Hosted",
         "stackfile": "Docker/Templates/immich/compose.yaml"
@@ -105,7 +116,7 @@
       "title": "Nextcloud",
       "description": "A modern, on-premises content collaboration platform with real-time document editing, video chat & groupware on mobile, desktop and web.",
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/nextcloud.png",
-      "categories": ["Networking"],
+      "categories": ["Media"],
       "repository": {
         "url": "https://github.com/Pathfinder9021/Self-Hosted",
         "stackfile": "Docker/Templates/nextcloud/compose.yaml"
@@ -116,7 +127,7 @@
       "title": "NGINX Proxy Manager",
       "description": "An open-source reverse proxy software.",
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/nginx-proxy-manager.png",
-      "categories": ["Networking"],
+      "categories": ["DevOps"],
       "repository": {
         "url": "https://github.com/Pathfinder9021/Self-Hosted",
         "stackfile": "Docker/Templates/nginx-proxy-manager/compose.yaml"
@@ -127,7 +138,7 @@
       "title": "Nutify",
       "description": "An open-source UPS monitoring and management platform.",
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/nutify.png",
-      "categories": ["Unknown"],
+      "categories": ["IoT"],
       "repository": {
         "url": "https://github.com/Pathfinder9021/Self-Hosted",
         "stackfile": "Docker/Templates/nutify/compose.yaml"
@@ -149,7 +160,7 @@
       "title": "Traefik",
       "description": "A modern open source reverse proxy and ingress controller.",
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/traefik.png",
-      "categories": ["Networking"],
+      "categories": ["DevOps"],
       "repository": {
         "url": "https://github.com/Pathfinder9021/Self-Hosted",
         "stackfile": "Docker/Templates/traefik/compose.yaml"
@@ -160,7 +171,7 @@
       "title": "QBittorrent-ProtonVPN",
       "description": "A free, open-source BitTorrent client with VPN.",
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/qbittorrent.png",
-      "categories": ["Utilities"],
+      "categories": ["Tools"],
       "repository": {
         "url": "https://github.com/Pathfinder9021/Self-Hosted",
         "stackfile": "Docker/Templates/qbittorrent-protonvpn/compose.yaml"
@@ -171,7 +182,7 @@
       "title": "Transmission-OpenVPN",
       "description": "A free, open-source BitTorrent client with VPN.",
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/transmission.png",
-      "categories": ["Utilities"],
+      "categories": ["Tools"],
       "repository": {
         "url": "https://github.com/Pathfinder9021/Self-Hosted",
         "stackfile": "Docker/Templates/transmission-openvpn/compose.yaml"

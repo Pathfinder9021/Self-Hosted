@@ -31,20 +31,23 @@ services:
       - ${PATH_APPDATA}/transmission-openvpn/protonvpn/:/etc/openvpn/custom/
       - ${PATH_MEDIA}:/mnt/media/downloads
     labels:
-      - "traefik.enable=${TRAEFIK_ENABLED:-false}"
+      - "traefik.enable=${TRAEFIK_ENABLED}"
       - "traefik.docker.network=public-apps"
-      #- "traefik.http.routers.transmission-openvpn-http.entrypoints=web"
-      #- "traefik.http.routers.transmission-openvpn-http.rule=Host(`transmission.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.transmission-openvpn-https.entrypoints=websecure"
-      - "traefik.http.routers.transmission-openvpn-https.rule=Host(`transmission.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.transmission-openvpn-https.rule=Host(`transmission.${TRAEFIK_CF_DNS_DOMAIN:-''}`)"
       - "traefik.http.routers.transmission-openvpn-https.service=transmission-openvpn"
       - "traefik.http.routers.transmission-openvpn-https.middlewares=authentik@file"
       - "traefik.http.routers.transmission-openvpn-https.tls=true"
       - "traefik.http.routers.transmission-openvpn-https.tls.certresolver=cloudflare"
-      - "traefik.http.routers.transmission-openvpn-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
-      - "traefik.http.routers.transmission-openvpn-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.routers.transmission-openvpn-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "traefik.http.routers.transmission-openvpn-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN:-''}"
       - "traefik.http.services.transmission-openvpn.loadbalancer.server.port=9091"
       - "traefik.http.services.transmission-openvpn.loadbalancer.server.scheme=http"
+      - "homepage.name=Transmission"
+      - "homepage.group=Tools"
+      - "homepage.icon=https://raw.githubusercontent.com/homarr-labs/dashboard-icons/refs/heads/main/svg/transmission.svg"
+      - "homepage.href=https://transmission.${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "homepage.description=Torrent client to download and share files"
     logging:
       driver: json-file
       options:

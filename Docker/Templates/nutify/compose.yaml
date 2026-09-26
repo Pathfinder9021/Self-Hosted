@@ -33,19 +33,24 @@ services:
       - ${PATH_APPDATA}/nutify/ssl:/app/ssl                    # SSL certificates and private keys
       - ${PATH_APPDATA}/nutify/nut:/etc/nut                # NUT configuration directory                 # Udev event access for hotplug monitoring
     labels:
-      - "traefik.enable=${TRAEFIK_ENABLED:-false}"
+      - "traefik.enable=${TRAEFIK_ENABLED}"
       - "traefik.docker.network=public-apps"
       - "traefik.http.routers.nutify-http.entrypoints=web"
-      - "traefik.http.routers.nutify-http.rule=Host(`nutify.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.nutify-http.rule=Host(`nutify.${TRAEFIK_CF_DNS_DOMAIN:-''}`)"
       - "traefik.http.routers.nutify-https.entrypoints=websecure"
-      - "traefik.http.routers.nutify-https.rule=Host(`nutify.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.nutify-https.rule=Host(`nutify.${TRAEFIK_CF_DNS_DOMAIN:-''}`)"
       - "traefik.http.routers.nutify-https.service=nutify"
       - "traefik.http.routers.nutify-https.tls=true"
       - "traefik.http.routers.nutify-https.tls.certresolver=cloudflare"
-      - "traefik.http.routers.nutify-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
-      - "traefik.http.routers.nutify-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.routers.nutify-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "traefik.http.routers.nutify-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN:-''}"
       - "traefik.http.services.nutify.loadbalancer.server.port=5050"
       - "traefik.http.services.nutify.loadbalancer.server.scheme=http"
+      - "homepage.name=Nutify"
+      - "homepage.group=IoT"
+      - "homepage.icon=https://raw.githubusercontent.com/homarr-labs/dashboard-icons/refs/heads/main/svg/nutify.svg"
+      - "homepage.href=https://nutify.${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "homepage.description=UPS monitoring and management platform"
     # DNS resolvers
     dns:
       - 1.1.1.1                                  # Cloudflare DNS

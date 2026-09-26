@@ -1,0 +1,85 @@
+services:
+  bookorbit:
+    container_name: bookorbit
+    image: ghcr.io/bookorbit/bookorbit:${BOOKORBIT_VERSION:-latest}
+    user: ${PUID:-0}:${PGID:-0}
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    ports:
+      - 10190:3000"
+    environment:
+      PUID: ${PUID:-0}
+      PGID: ${PGID:-0}
+      NODE_ENV: production
+      PORT: 3000
+      TZ: ${TZ:-UTC}
+      DATABASE_URL: bookorbit-database
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${BOOKORBIT_DATABASE_SCHEMA:-bookorbit}
+      POSTGRES_USER: ${BOOKORBIT_DATABASE_USERNAME:-bookorbit}
+      POSTGRES_PASSWORD: ${BOOKORBIT_DATABASE_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      SETUP_BOOTSTRAP_TOKEN: ${SETUP_BOOTSTRAP_TOKEN}
+      APP_URL: ${APP_URL}
+      CLIENT_URL: ${CLIENT_URL:-${APP_URL}}
+      NODE_MAX_OLD_SPACE_SIZE: ${BOOKORBIT_NODE_MAX_OLD_SPACE_SIZE:-auto}
+      BOOK_DOCK_PATH: ${BOOKORBIT_BOOK_DOCK_PATH:-}
+      LIBRARY_BROWSE_ROOT: ${BOOKORBIT_LIBRARY_BROWSE_ROOT:-}
+      DISABLE_LOCAL_AUTH: ${BOOKORBIT_DISABLE_LOCAL_AUTH:-false}
+    volumes:
+      - ${PATH_APPDATA}/bookorbit/data:/data
+      - ${PATH_MEDIA}:/mnt/media/books:rw
+    labels:
+      - "traefik.enable=${TRAEFIK_ENABLED}"
+      - "traefik.docker.network=public-apps"
+      - "traefik.http.routers.bookorbit-https.entrypoints=websecure"
+      - "traefik.http.routers.bookorbit-https.rule=Host(`bookorbit.${TRAEFIK_CF_DNS_DOMAIN:-''}`)"
+      - "traefik.http.routers.bookorbit-https.service=bookorbit"
+      - "traefik.http.routers.bookorbit-https.tls=true"
+      - "traefik.http.routers.bookorbit-https.tls.certresolver=cloudflare"
+      - "traefik.http.routers.bookorbit-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "traefik.http.routers.bookorbit-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "traefik.http.services.bookorbit.loadbalancer.server.port=81"
+      - "traefik.http.services.bookorbit.loadbalancer.server.scheme=http"
+      - "homepage.name=Bookorbit"
+      - "homepage.group=Media"
+      - "homepage.icon=https://raw.githubusercontent.com/homarr-labs/dashboard-icons/refs/heads/main/svg/bookorbit.svg"
+      - "homepage.href=https://bookorbit.${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "homepage.description=Book reading platform"
+    read_only: true
+    init: true
+    tmpfs:
+      - /tmp
+    stop_grace_period: 30s
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  bookorbit-database:
+    container_name: bookorbit-database
+    image: pgvector/pgvector:pg18
+    environment:
+      POSTGRES_DB: ${BOOKORBIT_DATABASE_SCHEMA:-bookorbit}
+      POSTGRES_USER: ${BOOKORBIT_DATABASE_USERNAME:-bookorbit}
+      POSTGRES_PASSWORD: ${BOOKORBIT_DATABASE_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ${PATH_APPDATA}/bookorbit/database:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        ["CMD-SHELL", 'pg_isready -U "$${BOOKORBIT_DATABASE_USERNAME}" -d "$${BOOKORBIT_DATABASE_SCHEMA}"']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped

@@ -16,18 +16,21 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - ${PATH_APPDATA}/home-assistant/config:/config
     labels:
-      - "traefik.enable=${TRAEFIK_ENABLED:-false}"
+      - "traefik.enable=${TRAEFIK_ENABLED}"
       - "traefik.docker.network=public-apps"
-      - "traefik.http.routers.homeassistant-http.entrypoints=web"
-      - "traefik.http.routers.homeassistant-http.rule=Host(`homeassistant.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.homeassistant-https.entrypoints=websecure"
-      - "traefik.http.routers.homeassistant-https.rule=Host(`homeassistant.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.homeassistant-https.rule=Host(`home-assistant.${TRAEFIK_CF_DNS_DOMAIN:-''}`)"
       - "traefik.http.routers.homeassistant-https.tls=true"
       - "traefik.http.routers.homeassistant-https.tls.certresolver=cloudflare"
-      - "traefik.http.routers.homeassistant-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
-      - "traefik.http.routers.homeassistant-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.routers.homeassistant-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "traefik.http.routers.homeassistant-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN:-''}"
       - "traefik.http.services.authentik.loadbalancer.server.port=8123"
       - "traefik.http.services.authentik.loadbalancer.server.scheme=http"
+      - "homepage.name=Home Assistant"
+      - "homepage.group=IoT"
+      - "homepage.icon=https://raw.githubusercontent.com/homarr-labs/dashboard-icons/refs/heads/main/svg/home-assistant.svg"
+      - "homepage.href=https://home-assistant.${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "homepage.description=Centralized home automation platform"
     healthcheck:
       test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/8123' || exit 1
       interval: 10s

@@ -25,17 +25,20 @@ services:
       - ${PATH_APPDATA}/gitea/data:/data:rw
       - ${PATH_APPDATA}/gitea/repositories:/data/git/repositories:rw
     labels:
-      - "traefik.enable=${TRAEFIK_ENABLED:-false}"
+      - "traefik.enable=${TRAEFIK_ENABLED}"
       - "traefik.docker.network=public-apps"
-      - "traefik.http.routers.gitea-http.entrypoints=web"
-      - "traefik.http.routers.gitea-http.rule=Host(`gitea.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.gitea-https.entrypoints=websecure"
-      - "traefik.http.routers.gitea-https.rule=Host(`gitea.${TRAEFIK_CF_DNS_DOMAIN}`)"
+      - "traefik.http.routers.gitea-https.rule=Host(`gitea.${TRAEFIK_CF_DNS_DOMAIN:-''}`)"
       - "traefik.http.routers.gitea-https.tls=true"
       - "traefik.http.routers.gitea-https.tls.certresolver=cloudflare"
-      - "traefik.http.routers.gitea-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
-      - "traefik.http.routers.gitea-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.routers.gitea-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "traefik.http.routers.gitea-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN:-''}"
       - "traefik.http.services.gitea.loadbalancer.server.port=10200"
+      - "homepage.name=Gitea"
+      - "homepage.group=Software Development"
+      - "homepage.icon=https://raw.githubusercontent.com/homarr-labs/dashboard-icons/refs/heads/main/svg/gitea.svg"
+      - "homepage.href=https://gitea.${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "homepage.description=Software development platform and Git hosting service"
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
     restart: unless-stopped
