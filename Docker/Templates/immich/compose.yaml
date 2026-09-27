@@ -13,6 +13,11 @@ services:
     devices:
       - /dev/dri:/dev/dri
     environment:
+      - DB_HOSTNAME=immich-database
+      - DB_DATABASE_NAME=${IMMICH_DATABASE_SCHEMA:-immich}
+      - DB_USERNAME=${IMMICH_DATABASE_USERNAME:-immich}
+      - DB_PASSWORD=${IMMICH_DATABASE_PASSWORD}
+      - REDIS_HOSTNAME=immich-redis
       - CPU_CORES=${IMMICH_CPU_CORES:-4}
       #- IMMICH_TRUSTED_PROXIES=${IMMICH_TRUSTED_PROXIES}
       #- IMMICH_WORKERS_INCLUDE=${IMMICH_WORKERS_INCLUDE}
@@ -76,7 +81,7 @@ services:
       - POSTGRES_USER=${IMMICH_DATABASE_USERNAME:-immich}
       - POSTGRES_PASSWORD=${IMMICH_DATABASE_PASSWORD}
       - POSTGRES_INITDB_ARGS='--data-checksums'
-      - DB_STORAGE_TYPE='HDD'
+      - DB_STORAGE_TYPE=HDD
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
