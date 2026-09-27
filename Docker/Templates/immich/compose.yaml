@@ -10,9 +10,8 @@ services:
     networks:
       - private-apps-immich
       - public-apps
-    extends:
-      file: hwaccel.transcoding.yml
-      service: quicksync # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
+    devices:
+      - /dev/dri:/dev/dri
     environment:
       - CPU_CORES=${IMMICH_CPU_CORES:-4}
       #- IMMICH_TRUSTED_PROXIES=${IMMICH_TRUSTED_PROXIES}
@@ -49,18 +48,18 @@ services:
 
   immich-machine-learning:
     container_name: immich-machine-learning
-    extends:
-      file: hwaccel.ml.yml
-      service: openvino # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference - use the `-wsl` version for WSL2 where applicable
-    # For hardware acceleration, add one of -[armnn, cuda, rocm, openvino, rknn] to the image tag.
-    # Example tag: ${IMMICH_VERSION:-release}-cuda
     image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}-openvino
     user: ${PUID:-0}:${PGID:-0}
+    device_cgroup_rules:
+      - 'c 189:* rmw'
+    devices:
+      - /dev/dri:/dev/dri
     networks:
       - private-apps-immich
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
+      - /dev/bus/usb:/dev/bus/usb
       - ${PATH_APPDATA}/immich/machine-learning/cache:/cache
     healthcheck:
       disable: false

@@ -21,7 +21,7 @@ services:
       - "traefik.http.routers.audiobookshelf-https.entrypoints=websecure"
       - "traefik.http.routers.audiobookshelf-https.rule=Host(`audiobookshelf.${TRAEFIK_CF_DNS_DOMAIN:-''}`)"
       - "traefik.http.routers.audiobookshelf-https.service=audiobookshelf"
-      - "traefik.http.routers.audiobookshelf-https.middlewares=authentik@file"
+#      - "traefik.http.routers.audiobookshelf-https.middlewares=authentik@file"
       - "traefik.http.routers.audiobookshelf-https.tls=true"
       - "traefik.http.routers.audiobookshelf-https.tls.certresolver=cloudflare"
       - "traefik.http.routers.audiobookshelf-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN:-''}"

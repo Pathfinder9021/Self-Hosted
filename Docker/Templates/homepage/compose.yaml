@@ -16,6 +16,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ${PATH_APPDATA}/homepage/config:/app/config:rw
+      - ${PATH_APPDATA}/homepage/resources:/app/public/resources:ro
     labels:
       - "traefik.enable=${TRAEFIK_ENABLED}"
       - "traefik.docker.network=public-apps"
