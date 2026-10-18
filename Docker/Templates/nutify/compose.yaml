@@ -1,9 +1,9 @@
 services:
   nutify:
     # Container image
-    image: dartsteven/nutify:${NUTIFY_VERSION:-latest}
+    image: dartsteven/nutify:${NUTIFY_VERSION:-latest-raspberrypi5-arm64}
     container_name: nutify
-    user: ${PUID:-0}:${PGID:0}
+    user: ${PUID:-0}:${PGID:-0}
     privileged: true                             # Broad hardware access for NUT and USB integration
     cap_add:
       - SYS_ADMIN                                # Extended system administration capabilities
@@ -16,17 +16,39 @@ services:
     ports:
       - 3493:3493                                # NUT daemon communication port
       - 5050:5050                                # Nutify application port
-      #- 443:443                                  # HTTPS secure web access
+      - 443:443                                 # HTTPS secure web access
     networks:
       - public-apps
     environment:
       - SECRET_KEY=${NUTIFY_SESSION_SECRET}             # Secret key used for sessions and encrypted values
       - UDEV=1                                   # Enable udev-aware USB detection mode
       - SSL_ENABLED=false                        # true or false, default is false
+      - SKIP_PERMCHECK=true
+      - LOG=true
+      - LOG_LEVEL=Info
+      - LOG_WERKZEUG=false
+      - ENABLE_LOG_STARTUP=Y
+      - OIDC_CONFIG_SOURCE=environment
+      - OIDC_ENABLED=${NUTIFY_OIDC_ENABLED}
+      - OIDC_ISSUER=${NUTIFY_OIDC_ISSUER}
+      - OIDC_CLIENT_ID=${NUTIFY_OIDC_CLIENT_ID}
+      - OIDC_CLIENT_SECRET=${NUTIFY_OIDC_CLIENT_SECRET}
+      - OIDC_REDIRECT_URI=${NUTIFY_OIDC_REDIRECT_URI}
+      - OIDC_SCOPES=openid profile email groups
+      - OIDC_USERNAME_CLAIM=preferred_username
+      - OIDC_GROUPS_CLAIM=groups
+      - OIDC_ADMIN_GROUP=UGOS Admins
+      - OIDC_USER_GROUP=UGOS Users
+      - OIDC_ALLOW_ALL_USERS=${NUTIFY_OIDC_ALLOW_ALL_USERS}
+      - OIDC_PROVIDER_NAME=${NUTIFY_OIDC_PROVIDER_NAME}
+      - OIDC_BUTTON_LABEL=${NUTIFY_OIDC_BUTTON_LABEL}
+      - OIDC_AUTO_REDIRECT=${NUTIFY_OIDC_AUTO_REDIRECT}
+      - OIDC_ALLOW_INSECURE_HTTP=false
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
       - /dev:/dev:rw                             # Full device tree access for hardware detection
+      - /dev/bus/usb:/dev/bus/usb:rw
       - /run/udev:/run/udev:ro  
       - ${PATH_APPDATA}/nutify/logs:/app/nutify/logs           # Application logs
       - ${PATH_APPDATA}/nutify/instance:/app/nutify/instance   # Persistent app data and runtime files
@@ -35,8 +57,6 @@ services:
     labels:
       - "traefik.enable=${TRAEFIK_ENABLED}"
       - "traefik.docker.network=public-apps"
-      - "traefik.http.routers.nutify-http.entrypoints=web"
-      - "traefik.http.routers.nutify-http.rule=Host(`nutify.${TRAEFIK_CF_DNS_DOMAIN:-''}`)"
       - "traefik.http.routers.nutify-https.entrypoints=websecure"
       - "traefik.http.routers.nutify-https.rule=Host(`nutify.${TRAEFIK_CF_DNS_DOMAIN:-''}`)"
       - "traefik.http.routers.nutify-https.service=nutify"
