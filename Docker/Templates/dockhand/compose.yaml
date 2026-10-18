@@ -7,8 +7,8 @@ services:
     networks:
       - public-apps
     environment:
-      - DISABLE_LOCAL_LOGIN=${DOCKHAND_DISABLE_LOCAL_LOGIN:-False}
-      - DISABLE_WHATS_NEW=${DOCKHAND_DISABLE_WHATS_NEW:-True}
+      - DISABLE_LOCAL_LOGIN=${DOCKHAND_DISABLE_LOCAL_LOGIN:-false}
+      - DISABLE_WHATS_NEW=${DOCKHAND_DISABLE_WHATS_NEW:-true}
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro

@@ -58,6 +58,17 @@
     },
     {
       "type": 3,
+      "title": "Dockhand-Hawser",
+      "description": "An agent for powerful, modern Docker management application.",
+      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/dockhand.png",
+      "categories": ["DevOps"],
+      "repository": {
+        "url": "https://github.com/Pathfinder9021/Self-Hosted",
+        "stackfile": "Docker/Templates/dockhand-hawser/compose.yaml"
+      }
+    },
+    {
+      "type": 3,
       "title": "Gitea",
       "description": "Enables the creation and management of repositories based on Git.",
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/gitea.png",

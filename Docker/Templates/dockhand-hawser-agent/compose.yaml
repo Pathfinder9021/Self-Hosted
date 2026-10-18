@@ -1,0 +1,19 @@
+services:
+  dockhand-hawser-agent:
+    container_name: dockhand-hawser-agent
+    image: ghcr.io/finsys/hawser:${HAWSER_VERSION:-latest}
+    ports:
+      - 2376:2376
+    networks:
+      - public-apps
+    environment:
+      - TOKEN=${DOCKHAND_TOKEN}
+      - STACKS_DIR=/opt/hawser-stacks
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${PATH_APPDATA}/dockhand-hawser-agent/stacks:/opt/hawser-stacks
+    restart: unless-stopped
+
+networks:
+  public-apps:
+    external: true
