@@ -36,17 +36,6 @@
     },
     {
       "type": 3,
-      "title": "Bookorbit",
-      "description": "A PDF multi-tool.",
-      "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/bookorbit.png",
-      "categories": ["Media"],
-      "repository": {
-        "url": "https://github.com/Pathfinder9021/Self-Hosted",
-        "stackfile": "Docker/Templates/bookorbit/compose.yaml"
-      }
-    },
-    {
-      "type": 3,
       "title": "Dockhand",
       "description": "A powerful, modern Docker management application.",
       "logo": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/dockhand.png",
