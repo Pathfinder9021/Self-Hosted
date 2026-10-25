@@ -1,33 +1,51 @@
 services:
-  nutify:
-    # Container image
-    image: dartsteven/nutify:${NUTIFY_VERSION:-latest-raspberrypi5-arm64}
+  # Main Nutify application and NUT monitoring service.
+  nut:
+    # Select the tag matching the host CPU. This default is for AMD64/x86_64.
+    image: dartsteven/nutify:${NUTIFY_VERSION:-latest-raspberrypi5-arm64} # or dartsteven/nutify:latest-amd64
+    # Fixed name makes logs and container commands easier to use.
     container_name: nutify
-    user: ${PUID:-0}:${PGID:-0}
-    privileged: true                             # Broad hardware access for NUT and USB integration
+    # Start from no Linux capabilities, then restore only those needed by the
+    # entrypoint for file ownership, user switching, and process supervision.
+    cap_drop:
+      - ALL
     cap_add:
-      - SYS_ADMIN                                # Extended system administration capabilities
-      - SYS_RAWIO                                # Raw hardware I/O access
-      - MKNOD                                    # Create special device files if needed
-    devices:
-      - /dev/bus/usb:/dev/bus/usb:rwm            # Map host USB bus into the container
+      - CHOWN        # Set ownership on persistent bind-mounted files.
+      - DAC_OVERRIDE # Prepare files whose existing permissions are restrictive.
+      - FOWNER       # Adjust modes on files prepared during startup.
+      - KILL         # Supervise child NUT and web processes.
+      - SETGID       # Drop services to the configured runtime group.
+      - SETUID       # Drop services to the configured runtime user.
+    security_opt:
+      # Prevent processes from gaining additional privileges after startup.
+      - no-new-privileges:true
+    # USB HID discovery and driver access. This exposes only the USB bus, not
+    # privileged mode or the complete host /dev tree. Major 189 is Linux USB.
     device_cgroup_rules:
-      - 'c 189:* rwm'                            # Allow all USB character devices
+      - "c 189:* rwm"
     ports:
-      - 3493:3493                                # NUT daemon communication port
-      - 5050:5050                                # Nutify application port
-      - 443:443                                 # HTTPS secure web access
+      - 3493:3493 # NUT upsd endpoint for authorized network clients.
+      - 5050:5050 # Nutify HTTP application and setup wizard.
+      #- 443:443   # Nutify HTTPS endpoint when SSL_ENABLED=true.
     networks:
       - public-apps
     environment:
-      - SECRET_KEY=${NUTIFY_SESSION_SECRET}             # Secret key used for sessions and encrypted values
-      - UDEV=1                                   # Enable udev-aware USB detection mode
-      - SSL_ENABLED=false                        # true or false, default is false
-      - SKIP_PERMCHECK=true
-      - LOG=true
-      - LOG_LEVEL=Info
-      - LOG_WERKZEUG=false
-      - ENABLE_LOG_STARTUP=Y
+      # Required secret for sessions and encrypted provider credentials.
+      # Generate it once with: openssl rand -hex 32
+      - SECRET_KEY=${NUTIFY_SESSION_SECRET}
+      - NUTIFY_WEB_USER=nut      # Unprivileged user running the web application.
+      - NUT_SERVICE_USER=nut     # Unprivileged user running NUT commands.
+      - UDEV="1"                 # Enable USB/udev-aware device discovery.
+      - SKIP_PERMCHECK="true"    # Never chmod/chown host USB device nodes.
+      # Optional numeric host USB group when it cannot be detected at startup.
+      - NUTIFY_USB_GID=${NUTIFY_USB_GID:-}
+      - LOG="true"               # Enable application logging.
+      - LOG_LEVEL=INFO            # DEBUG, INFO, WARNING, ERROR, or CRITICAL.
+      - LOG_WERKZEUG="false"      # Enable HTTP access logs.
+      - ENABLE_LOG_STARTUP=Y      # Log startup diagnostics without secret values.
+      - SSL_ENABLED="false"      # Set true only after mounting valid TLS files.
+      # Optional comma-separated exact reverse-proxy origins; wildcards fail.
+      - SOCKETIO_ALLOWED_ORIGINS=${NUTIFY_OIDC_CLIENT_IDSOCKETIO_ALLOWED_ORIGINS:-}
       - OIDC_CONFIG_SOURCE=environment
       - OIDC_ENABLED=${NUTIFY_OIDC_ENABLED}
       - OIDC_ISSUER=${NUTIFY_OIDC_ISSUER}
@@ -45,41 +63,37 @@ services:
       - OIDC_AUTO_REDIRECT=${NUTIFY_OIDC_AUTO_REDIRECT}
       - OIDC_ALLOW_INSECURE_HTTP=false
     volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
-      - /dev:/dev:rw                             # Full device tree access for hardware detection
-      - /dev/bus/usb:/dev/bus/usb:rw
-      - /run/udev:/run/udev:ro  
-      - ${PATH_APPDATA}/nutify/logs:/app/nutify/logs           # Application logs
-      - ${PATH_APPDATA}/nutify/instance:/app/nutify/instance   # Persistent app data and runtime files
-      - ${PATH_APPDATA}/nutify/ssl:/app/ssl                    # SSL certificates and private keys
-      - ${PATH_APPDATA}/nutify/nut:/etc/nut                # NUT configuration directory                 # Udev event access for hotplug monitoring
+      - ${PATH_APPDATA}/nutify/logs:/app/nutify/logs         # Application and NUT logs.
+      - ${PATH_APPDATA}/nutify/instance:/app/nutify/instance # Database and runtime state.
+      - ${PATH_APPDATA}/nutify/ssl:/app/ssl                  # Optional TLS certificate/key.
+      - ${PATH_APPDATA}/nutify/etc/nut:/etc/nut              # Generated NUT configuration.
+      - /dev/bus/usb:/dev/bus/usb:rw           # USB devices for nut-scanner/NUT.
+      - /run/udev:/run/udev:ro                 # Read-only USB identity metadata.
     labels:
       - "traefik.enable=${TRAEFIK_ENABLED}"
       - "traefik.docker.network=public-apps"
       - "traefik.http.routers.nutify-https.entrypoints=websecure"
-      - "traefik.http.routers.nutify-https.rule=Host(`nutify.${TRAEFIK_CF_DNS_DOMAIN:-''}`)"
+      - "traefik.http.routers.nutify-https.rule=Host(`nutify.${TRAEFIK_CF_DNS_DOMAIN}`)"
       - "traefik.http.routers.nutify-https.service=nutify"
       - "traefik.http.routers.nutify-https.tls=true"
       - "traefik.http.routers.nutify-https.tls.certresolver=cloudflare"
-      - "traefik.http.routers.nutify-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN:-''}"
-      - "traefik.http.routers.nutify-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "traefik.http.routers.nutify-https.tls.domains[0].main=${TRAEFIK_CF_DNS_DOMAIN}"
+      - "traefik.http.routers.nutify-https.tls.domains[0].sans=*.${TRAEFIK_CF_DNS_DOMAIN}"
       - "traefik.http.services.nutify.loadbalancer.server.port=5050"
       - "traefik.http.services.nutify.loadbalancer.server.scheme=http"
       - "homepage.name=Nutify"
       - "homepage.group=IoT"
       - "homepage.icon=https://raw.githubusercontent.com/homarr-labs/dashboard-icons/refs/heads/main/svg/nutify.svg"
-      - "homepage.href=https://nutify.${TRAEFIK_CF_DNS_DOMAIN:-''}"
+      - "homepage.href=https://nutify.${TRAEFIK_CF_DNS_DOMAIN}"
       - "homepage.description=UPS monitoring and management platform"
     # DNS resolvers
     dns:
-      - 1.1.1.1                                  # Cloudflare DNS
-      - 8.8.8.8                                  # Google DNS
+      - 1.1.1.1 # Cloudflare DNS.
+      - 8.8.8.8 # Google Public DNS fallback.
     dns_opt:
-      - timeout:2                                # DNS timeout per query
-      - attempts:2                               # Retry count before failure
+      - timeout:2 # Seconds allowed for each DNS attempt.
+      - attempts:2 # Number of attempts before the query fails.
     restart: unless-stopped
-
 networks:
   public-apps:
     external: true
